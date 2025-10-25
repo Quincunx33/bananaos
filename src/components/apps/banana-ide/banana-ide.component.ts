@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal, effect, inject, viewChild, 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { ApiKeyService } from '../../../services/api-key.service';
 
 declare var hljs: any;

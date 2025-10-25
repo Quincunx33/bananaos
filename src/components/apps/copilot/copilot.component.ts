@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, ElementRef, ViewChild, AfterViewChecked, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { OsInteractionService, CopilotAction, InAppAction, CodeRepairPayload } from '../../../services/os-interaction.service';
 import { WeatherService } from '../../../services/weather.service';
 import { APPS_CONFIG } from '../../../config/apps.config';
