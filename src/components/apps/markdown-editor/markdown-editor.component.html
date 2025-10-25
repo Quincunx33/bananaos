@@ -1,0 +1,10 @@
+<div class="h-full w-full grid grid-cols-2 bg-gray-800 text-gray-200 font-sans">
+  <textarea class="w-full h-full bg-gray-900 p-6 resize-none focus:outline-none text-base leading-relaxed font-mono"
+            placeholder="Type your Markdown here..."
+            [ngModel]="markdownText()"
+            (ngModelChange)="markdownText.set($event)"></textarea>
+  
+  <div class="w-full h-full bg-gray-800 p-6 overflow-y-auto markdown-preview"
+       [innerHTML]="htmlPreview()">
+  </div>
+</div>

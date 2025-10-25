@@ -1,0 +1,43 @@
+<div class="h-full w-full flex items-center justify-center bg-gray-900 text-white p-4">
+  <div class="flex gap-8">
+    <!-- Game Board -->
+    <div class="grid border-2 border-gray-600" [style.grid-template-columns]="'repeat(10, 25px)'">
+      @for (row of renderedBoard; track $index) {
+        @for (cell of row; track $index) {
+          <div class="w-[25px] h-[25px]" [ngClass]="'bg-' + cell"></div>
+        }
+      }
+    </div>
+    
+    <!-- Game Info -->
+    <div class="w-40 flex flex-col items-center">
+      <h2 class="text-2xl font-bold mb-4">Puzzle Blocks</h2>
+      <div class="bg-gray-800 p-3 rounded-lg w-full text-center mb-4">
+        <p class="text-base text-gray-400">Score</p>
+        <p class="text-2xl font-bold">{{ score() }}</p>
+      </div>
+
+      <div class="bg-gray-800 p-3 rounded-lg w-full text-center">
+        <p class="text-base text-gray-400 mb-2">Next</p>
+        @if(nextPiece(); as piece) {
+            <div class="grid mx-auto" [style.grid-template-columns]="'repeat(' + piece.shape[0].length + ', 15px)'">
+                @for(row of piece.shape; track $index) {
+                    @for(cell of row; track $index) {
+                        <div class="w-[15px] h-[15px]" [ngClass]="cell > 0 ? 'bg-' + piece.color : 'bg-transparent'"></div>
+                    }
+                }
+            </div>
+        }
+      </div>
+
+      @if (gameOver()) {
+        <div class="mt-8 text-center bg-red-800/50 p-4 rounded-lg">
+          <h3 class="text-2xl font-bold text-red-400">Game Over</h3>
+          <button (click)="startGame()" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md">
+            Play Again
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

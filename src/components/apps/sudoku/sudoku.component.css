@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .sudoku-cell {
+    @apply w-full h-full flex items-center justify-center text-2xl cursor-pointer bg-gray-800 hover:bg-gray-700/80 transition-colors;
+  }
+  .sudoku-cell.given {
+    @apply text-gray-400 font-bold cursor-not-allowed;
+  }
+  .sudoku-cell.highlighted {
+    @apply bg-gray-700/60;
+  }
+  .sudoku-cell.num-highlighted {
+      @apply bg-blue-800/40;
+  }
+  .sudoku-cell.selected {
+    @apply bg-blue-700;
+  }
+  .sudoku-cell.invalid {
+    @apply bg-red-800/50 text-red-400;
+  }
+  .control-btn {
+    @apply w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-md text-xl font-semibold;
+  }
+}

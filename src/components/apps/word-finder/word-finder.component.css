@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .word-cell {
+    @apply w-10 h-10 flex items-center justify-center text-xl font-bold bg-gray-700 rounded-md cursor-pointer transition-colors;
+  }
+  .word-cell.selected {
+    @apply accent-bg text-white;
+  }
+  .found {
+    @apply line-through text-gray-500 scale-95 origin-left;
+    transition: color 0.5s, transform 0.5s;
+  }
+}

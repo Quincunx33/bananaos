@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .cell {
+    @apply w-6 h-6 bg-gray-500 hover:bg-gray-400 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer;
+    border-style: outset;
+    border-width: 2px;
+    border-color: #718096 #4a5568 #4a5568 #718096;
+  }
+  .cell.revealed {
+    @apply bg-gray-600 cursor-default;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #4a5568;
+  }
+  .cell.flagged {
+    @apply text-red-500;
+  }
+  .cell.mine {
+    @apply bg-red-700;
+  }
+  .cell.lost {
+      animation: flash 0.5s infinite;
+  }
+  .c1 { @apply text-blue-400; }
+  .c2 { @apply text-green-400; }
+  .c3 { @apply text-red-400; }
+  .c4 { @apply text-blue-600; }
+  .c5 { @apply text-red-600; }
+  .c6 { @apply text-teal-400; }
+}
+
+@keyframes flash {
+  0%, 100% { background-color: #c53030; } /* red-700 */
+  50% { background-color: #f56565; } /* red-500 */
+}

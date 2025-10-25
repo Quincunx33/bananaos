@@ -1,0 +1,78 @@
+<div class="h-full w-full flex bg-gray-900 text-white font-sans">
+  <!-- Player Controls & Album Art -->
+  <div class="w-80 flex-shrink-0 bg-gray-800/50 flex flex-col items-center justify-center p-6 text-center">
+    @if(currentTrack(); as track) {
+      <img [src]="track.albumArt" alt="Album Art" class="w-48 h-48 rounded-lg shadow-2xl mb-6">
+      <h2 class="text-xl font-bold">{{ track.title }}</h2>
+      <p class="text-gray-400">{{ track.artist }}</p>
+
+      <!-- Progress Bar -->
+      <div class="w-full mt-6">
+        <input type="range" class="w-full h-1.5 accent-bg rounded-lg appearance-none cursor-pointer" 
+               [value]="currentTime()" 
+               [max]="duration() || 100"
+               (input)="seek($event)">
+        <div class="flex justify-between text-xs text-gray-400 mt-1">
+          <span>{{ currentTime() * 1000 | date:'mm:ss':'UTC' }}</span>
+          <span>{{ duration() * 1000 | date:'mm:ss':'UTC' }}</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-6 mt-6">
+        <button (click)="prevTrack()" class="control-btn"><i class="fas fa-backward-step"></i></button>
+        <button (click)="playPause()" class="w-16 h-16 rounded-full accent-bg flex items-center justify-center text-3xl shadow-lg hover:opacity-90">
+          <i class="fas" [class.fa-play]="!isPlaying()" [class.fa-pause]="isPlaying()"></i>
+        </button>
+        <button (click)="nextTrack()" class="control-btn"><i class="fas fa-forward-step"></i></button>
+      </div>
+      
+      <!-- Volume -->
+      <div class="w-full flex items-center gap-3 mt-8">
+        <i class="fas fa-volume-down text-gray-400"></i>
+        <input type="range" class="flex-1 h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer" 
+               min="0" max="1" step="0.01" 
+               [value]="volume()"
+               (input)="setVolume($event)">
+        <i class="fas fa-volume-up text-gray-400"></i>
+      </div>
+    }
+  </div>
+
+  <!-- Playlist -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="p-4 flex-shrink-0 flex justify-between items-center border-b border-gray-700/50">
+      <h3 class="text-lg font-bold">Playlist</h3>
+      <button (click)="triggerFileUpload()" class="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md transition-colors">
+        <i class="fas fa-upload mr-2"></i>Upload
+      </button>
+      <input type="file" #fileInputEl class="hidden" accept="audio/*" multiple (change)="handleFileUpload($event)">
+    </div>
+    <div class="flex-1 overflow-y-auto">
+      @for (track of playlist(); track track.src; let i = $index) {
+        <div (click)="selectTrack(i)"
+             class="flex items-center p-3 gap-4 cursor-pointer hover:bg-gray-800/70"
+             [class.bg-gray-800]="currentTrackIndex() === i">
+          <img [src]="track.albumArt" alt="Album" class="w-12 h-12 rounded">
+          <div class="flex-1">
+            <p class="font-semibold" [class.accent-text]="currentTrackIndex() === i">{{ track.title }}</p>
+            <p class="text-sm text-gray-400">{{ track.artist }}</p>
+          </div>
+          @if (currentTrackIndex() === i && isPlaying()) {
+            <div class="music-bars">
+              <span></span><span></span><span></span><span></span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <audio #audioEl 
+         (play)="isPlaying.set(true)" 
+         (pause)="isPlaying.set(false)"
+         (ended)="nextTrack()"
+         (timeupdate)="updateTime()"
+         (loadedmetadata)="updateDuration()">
+  </audio>
+</div>

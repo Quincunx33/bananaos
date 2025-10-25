@@ -1,0 +1,237 @@
+<div class="h-full flex bg-gray-900/80 backdrop-blur-sm text-gray-200">
+  <div class="w-48 bg-gray-900/50 p-2 flex-shrink-0">
+    <h2 class="text-lg font-bold p-2 mb-2">Settings</h2>
+    <ul>
+      <li>
+        <button (click)="activeTab.set('system')" 
+                [class.bg-gray-700]="activeTab() === 'system'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
+          <i class="fas fa-desktop mr-2 w-4"></i>System
+        </button>
+      </li>
+      <li>
+        <button (click)="activeTab.set('personalization')" 
+                [class.bg-gray-700]="activeTab() === 'personalization'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
+          <i class="fas fa-palette mr-2 w-4"></i>Personalization
+        </button>
+      </li>
+      <li>
+        <button (click)="activeTab.set('data')" 
+                [class.bg-gray-700]="activeTab() === 'data'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
+          <i class="fas fa-database mr-2 w-4"></i>Data Management
+        </button>
+      </li>
+      <li>
+        <button (click)="activeTab.set('about')" 
+                [class.bg-gray-700]="activeTab() === 'about'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
+          <i class="fas fa-info-circle mr-2 w-4"></i>About
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="flex-1 p-6 overflow-y-auto">
+    @if (notification(); as notif) {
+      <div [class.bg-green-500/30]="notif.type === 'success'"
+            [class.text-green-300]="notif.type === 'success'"
+            [class.bg-red-500/30]="notif.type === 'error'"
+            [class.text-red-300]="notif.type === 'error'"
+            class="p-3 rounded-lg mb-6 text-sm">
+        <i class="fas" [class.fa-check-circle]="notif.type === 'success'" [class.fa-exclamation-triangle]="notif.type === 'error'"></i>
+        <span class="ml-2">{{ notif.message }}</span>
+      </div>
+    }
+
+    @switch (activeTab()) {
+      @case ('system') {
+        <h3 class="text-2xl font-bold mb-6">System</h3>
+        <div class="space-y-6">
+          <div class="p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">Device Information</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">OS Version:</span>
+                <span>Banana OS 1.0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Device Model:</span>
+                <span class="font-mono">{{ deviceModel() }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Public IP Address:</span>
+                <span class="font-mono">{{ ipAddress() }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">MAC Address:</span>
+                <span class="font-mono">{{ macAddress() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3 text-red-300">System Actions</h4>
+            <div class="space-y-4">
+              <div>
+                <p class="text-sm text-gray-400 mb-2">Simulate a system restart. This will close all applications and reload the OS.</p>
+                <button (click)="requestRestart()" class="bg-yellow-600 hover:bg-yellow-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity">
+                  Restart Now
+                </button>
+              </div>
+              <div class="pt-4 border-t border-red-500/30">
+                <p class="text-sm text-gray-400 mb-2">Perform a factory reset. This will close all windows, uninstall non-core apps, and reset all settings. <span class="font-bold">This action is irreversible.</span></p>
+                 <button (click)="requestFactoryReset()" class="bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity">
+                  Factory Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      @case ('personalization') {
+        <h3 class="text-2xl font-bold mb-6">Personalization</h3>
+        
+        <div class="mb-8">
+          <h4 class="text-lg font-semibold mb-3">Accent Color</h4>
+          <div class="flex flex-wrap gap-3">
+            @for (color of accentColors; track color) {
+              <button (click)="settingsService.setAccentColor(color)"
+                      [class.ring-2]="settingsService.accentColor() === color"
+                      [style.background-color]="'var(--accent-color-' + color + ')'"
+                      class="w-10 h-10 rounded-full ring-offset-2 ring-offset-gray-800 transition-all">
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <h4 class="text-lg font-semibold mb-3">Wallpaper</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            @for (wallpaper of wallpapers; track wallpaper.id) {
+              <div (click)="settingsService.setWallpaper(wallpaper.id)"
+                   [class.ring-2]="settingsService.wallpaper() === wallpaper.id"
+                   class="aspect-video rounded-md cursor-pointer ring-offset-2 ring-offset-gray-800 accent-ring-focus overflow-hidden"
+                   [ngClass]="wallpaper.id">
+                   <div class="h-full w-full flex items-end p-2 bg-black/20">
+                     <span class="text-white font-semibold text-sm">{{ wallpaper.name }}</span>
+                   </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-gray-700">
+          <h4 class="text-lg font-semibold mb-3">Custom Wallpaper</h4>
+          <div class="bg-gray-800/50 p-4 rounded-lg flex items-start gap-4">
+            @if (customWallpaperPreview()) {
+              <img [src]="customWallpaperPreview()" alt="Wallpaper Preview" class="w-32 h-20 object-cover rounded">
+            } @else {
+              <div class="w-32 h-20 bg-gray-700 rounded flex items-center justify-center">
+                <i class="fas fa-image text-3xl text-gray-500"></i>
+              </div>
+            }
+            <div class="flex-1">
+              <p class="text-sm text-gray-400 mb-2">Upload an image to use as your desktop background.</p>
+              <input type="file" #fileInput class="hidden" accept="image/*" (change)="onWallpaperFileSelected($event)">
+              <div class="flex gap-2">
+                  <button (click)="fileInput.click()" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity text-sm">
+                    <i class="fas fa-upload mr-2"></i>Choose Image
+                  </button>
+                  @if (customWallpaperPreview()) {
+                    <button (click)="setCustomWallpaper()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity text-sm">
+                      Apply
+                    </button>
+                  }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      @case ('data') {
+        <h3 class="text-2xl font-bold mb-6">Data Management</h3>
+
+        <div class="mb-8 p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">Export Encrypted Settings</h4>
+            <p class="text-sm text-gray-400 mb-4">Save your personalization settings to a file. Set a password to encrypt it.</p>
+            <div class="flex gap-4">
+                <input type="password" 
+                       placeholder="Enter password..."
+                       [value]="exportPassword()"
+                       (input)="exportPassword.set($any($event.target).value)"
+                       class="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus">
+                <button (click)="exportSettings()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity">
+                    <i class="fas fa-download mr-2"></i>Export
+                </button>
+            </div>
+        </div>
+
+        <div class="p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">Import Encrypted Settings</h4>
+            <p class="text-sm text-gray-400 mb-4">Load your personalization settings from a file. You will need the password used for encryption.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="import-file-input" class="block text-sm font-medium text-gray-300 mb-1">Settings File</label>
+                    <input id="import-file-input"
+                           type="file" 
+                           (change)="handleFileSelect($event)"
+                           accept=".json"
+                           class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:accent-bg file:text-white hover:file:opacity-90">
+                </div>
+                 <div>
+                    <label for="import-password" class="block text-sm font-medium text-gray-300 mb-1">Decryption Password</label>
+                    <input id="import-password"
+                           type="password"
+                           placeholder="Enter password..."
+                           [value]="importPassword()"
+                           (input)="importPassword.set($any($event.target).value)"
+                           class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus">
+                </div>
+                <button (click)="importSettings()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity w-full">
+                    <i class="fas fa-upload mr-2"></i>Import & Apply
+                </button>
+            </div>
+        </div>
+      }
+      @case ('about') {
+        <div class="flex flex-col items-center justify-center h-full text-center">
+          <i class="fas fa-lemon text-7xl accent-text mb-4"></i>
+          <h3 class="text-3xl font-bold mb-2">Banana OS</h3>
+          <p class="text-gray-400">Version 1.0 (Build {{ year }})</p>
+          <p class="mt-4 max-w-md">A fully functional web-based desktop environment simulator built with Angular.</p>
+          <div class="mt-8 text-xs text-gray-500">
+            <p>&copy; {{ year }} Banana OS Project. All rights reserved.</p>
+            <p class="mt-2">Created with passion by a world-class AI engineer.</p>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Confirmation Modals -->
+  @if(isFactoryResetConfirmOpen()) {
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-96 border border-gray-700">
+        <h3 class="text-xl font-bold mb-2">Confirm Factory Reset</h3>
+        <p class="text-gray-400 mb-6">Are you sure you want to proceed? All custom settings and installed apps will be permanently deleted.</p>
+        <div class="flex justify-end gap-4">
+          <button (click)="cancelFactoryReset()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md">Cancel</button>
+          <button (click)="confirmFactoryReset()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-md">Confirm Reset</button>
+        </div>
+      </div>
+    </div>
+  }
+  @if(isRestartConfirmOpen()) {
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-96 border border-gray-700">
+        <h3 class="text-xl font-bold mb-2">Confirm System Restart</h3>
+        <p class="text-gray-400 mb-6">Are you sure you want to restart? All open applications will be closed.</p>
+        <div class="flex justify-end gap-4">
+          <button (click)="cancelRestart()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md">Cancel</button>
+          <button (click)="confirmRestart()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-md">Confirm Restart</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,53 @@
+<div class="h-full flex flex-col md:flex-row bg-gray-900 text-gray-200 font-sans">
+  <!-- Controls -->
+  <div class="w-full md:w-64 flex-shrink-0 bg-gray-800 p-4 flex flex-col gap-4 border-b md:border-b-0 md:border-r border-gray-700">
+    <h2 class="text-xl font-bold">Banana IDE</h2>
+    <div>
+      <label for="language" class="block text-sm font-medium text-gray-400 mb-1">Language</label>
+      <select id="language" [ngModel]="language()" (ngModelChange)="setLanguage($event)" class="ide-select">
+        <option value="html">HTML</option>
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+      </select>
+    </div>
+    <div class="flex-grow flex flex-col">
+        <label for="ai-prompt" class="block text-sm font-medium text-gray-400 mb-1">AI Assistant</label>
+        <textarea id="ai-prompt" [(ngModel)]="aiPrompt" placeholder="e.g., create a blue button that says 'Click Me'" rows="4" class="ide-textarea flex-grow"></textarea>
+    </div>
+    <div class="flex flex-col gap-2">
+        <button (click)="generateCode()" [disabled]="isLoading()" class="ide-btn accent-bg hover:opacity-90 disabled:opacity-50 disabled:cursor-wait">
+            @if(isLoading()) {
+                <i class="fas fa-spinner fa-spin mr-2"></i> Generating...
+            } @else {
+                <i class="fas fa-magic mr-2"></i> Generate Code
+            }
+        </button>
+        <button (click)="runCode()" class="ide-btn bg-green-600 hover:bg-green-500">
+            <i class="fas fa-play mr-2"></i> Run Code
+        </button>
+    </div>
+  </div>
+
+  <!-- Editor & Output -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Editor -->
+    <div class="flex-1 relative h-1/2 md:h-full">
+      <textarea class="editor-textarea" 
+                spellcheck="false"
+                [(ngModel)]="codeContent"></textarea>
+      <pre class="editor-pre"><code #codeBlock [ngClass]="'language-' + language()"></code></pre>
+    </div>
+    
+    <!-- Output -->
+    <div class="flex-1 h-1/2 md:h-full border-t-2 md:border-t-0 md:border-l-2 border-gray-700 bg-gray-900">
+        @if (language() === 'html') {
+            <iframe title="HTML Output" [srcdoc]="outputHtml()" class="w-full h-full border-0 bg-white"></iframe>
+        } @else {
+            <div class="p-4 h-full overflow-y-auto">
+                <h3 class="font-bold text-gray-400 mb-2 border-b border-gray-700 pb-1">Output Console</h3>
+                <pre class="text-sm whitespace-pre-wrap">{{ outputText() }}</pre>
+            </div>
+        }
+    </div>
+  </div>
+</div>

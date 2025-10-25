@@ -1,0 +1,38 @@
+<div class="h-full flex flex-col bg-gray-800 text-gray-200 p-4 gap-4">
+  <div class="flex-shrink-0 flex items-center justify-between gap-4">
+    <select [(ngModel)]="sourceLang" class="lang-select">
+      @for(lang of languages; track lang) {
+        <option [value]="lang">{{ lang }}</option>
+      }
+    </select>
+    <button (click)="swapLanguages()" class="w-10 h-10 flex-shrink-0 rounded-full hover:bg-gray-700 flex items-center justify-center transition-colors">
+      <i class="fas fa-exchange-alt"></i>
+    </button>
+    <select [(ngModel)]="targetLang" class="lang-select">
+      @for(lang of languages; track lang) {
+        <option [value]="lang">{{ lang }}</option>
+      }
+    </select>
+  </div>
+  
+  <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <textarea [(ngModel)]="inputText" placeholder="Enter text..." class="text-area"></textarea>
+    <div class="relative">
+      <textarea [value]="translatedText()" readonly placeholder="Translation..." class="text-area"></textarea>
+      @if (isLoading()) {
+        <div class="absolute inset-0 bg-gray-900/50 flex items-center justify-center rounded-lg">
+          <i class="fas fa-spinner fa-spin text-3xl"></i>
+        </div>
+      }
+    </div>
+  </div>
+  
+  <div class="flex-shrink-0 flex flex-col items-center">
+    @if(error(); as errorMsg) {
+      <p class="text-red-400 text-sm mb-2">{{ errorMsg }}</p>
+    }
+    <button (click)="translate()" [disabled]="isLoading() || !inputText().trim()" class="accent-bg text-white font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-wait">
+      <i class="fas fa-language mr-2"></i>Translate
+    </button>
+  </div>
+</div>

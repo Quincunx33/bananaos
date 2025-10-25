@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .notification-toast {
+    @apply flex items-start w-full max-w-xs p-4 text-white bg-gray-800/80 backdrop-blur-md rounded-lg shadow-2xl border-l-4 transition-all duration-300 animate-slide-in-right;
+  }
+  .toast-success { @apply border-green-500 text-green-300; }
+  .toast-error { @apply border-red-500 text-red-300; }
+  .toast-warning { @apply border-yellow-500 text-yellow-300; }
+  .toast-info { @apply border-blue-500 text-blue-300; }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}

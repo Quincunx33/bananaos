@@ -1,0 +1,74 @@
+<div class="h-full w-full flex flex-col bg-gray-900 text-white font-sans">
+  @switch(status()) {
+    @case('loading') {
+      <div class="h-full w-full flex items-center justify-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+      </div>
+    }
+    @case('error') {
+      <div class="h-full w-full flex flex-col items-center justify-center text-center p-4">
+        <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+        <h3 class="text-xl font-bold">Failed to Load</h3>
+        <p class="text-gray-400">{{ errorMsg() }}</p>
+      </div>
+    }
+    @case('loaded') {
+      @if (podcastInfo(); as podcast) {
+        <!-- Main Content - Episodes & Player -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <!-- Episode List -->
+          <div class="flex-1 overflow-y-auto">
+            <div class="p-6 flex items-start gap-6 border-b border-gray-700/50 bg-gray-800/50">
+              <img [src]="podcast.coverArt" alt="Cover Art" class="w-32 h-32 rounded-lg shadow-lg">
+              <div>
+                <h3 class="text-3xl font-bold">{{ podcast.title }}</h3>
+                <p class="text-lg text-gray-400 mt-1">{{ podcast.author }}</p>
+                <p class="text-sm text-gray-400 mt-2 line-clamp-3">{{ podcast.description }}</p>
+              </div>
+            </div>
+            <div class="p-4">
+              <h4 class="font-semibold mb-2">Episodes</h4>
+              @for (episode of episodes(); track episode.src) {
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-800/70">
+                  <div class="flex-1">
+                    <p class="font-semibold">{{ episode.title }}</p>
+                    <p class="text-xs text-gray-400">
+                      {{ episode.pubDate | date:'mediumDate' }} &bull; {{ episode.duration }}
+                    </p>
+                  </div>
+                  <button (click)="playEpisode(episode)"
+                          class="w-10 h-10 flex-shrink-0 rounded-full bg-gray-700 hover:accent-bg flex items-center justify-center">
+                    @if (currentEpisode()?.src === episode.src && isPlaying()) {
+                      <i class="fas fa-pause"></i>
+                    } @else {
+                      <i class="fas fa-play"></i>
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Player Bar -->
+          @if (currentEpisode(); as episode) {
+            <div class="flex-shrink-0 h-20 bg-gray-900/50 backdrop-blur-md border-t border-gray-700/50 flex items-center p-4 gap-4">
+              <img [src]="podcast.coverArt" alt="Cover" class="w-12 h-12 rounded">
+              <div class="flex-1 overflow-hidden">
+                <p class="font-semibold truncate">{{ episode.title }}</p>
+                <p class="text-sm text-gray-400 truncate">{{ podcast.title }}</p>
+              </div>
+              <button (click)="togglePlayPause()" class="w-12 h-12 rounded-full accent-bg flex items-center justify-center text-xl">
+                <i class="fas" [class.fa-play]="!isPlaying()" [class.fa-pause]="isPlaying()"></i>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+
+  <audio #audioEl 
+         (play)="isPlaying.set(true)" 
+         (pause)="isPlaying.set(false)">
+  </audio>
+</div>

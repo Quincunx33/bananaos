@@ -1,0 +1,40 @@
+
+<div class="h-full bg-cover bg-center p-6 flex flex-col text-white relative" 
+     [style.background-image]="weather() ? 'url(https://source.unsplash.com/600x400/?' + weather().weather[0].main + ')' : 'url(https://source.unsplash.com/600x400/?weather)'">
+  <div class="absolute inset-0 bg-black/50"></div>
+  
+  <div class="relative z-10 flex-shrink-0 mb-4 flex gap-2">
+    <input type="text" placeholder="Search city..." (change)="onSearch($event)" 
+           class="flex-1 bg-white/20 backdrop-blur-md rounded-lg p-2 focus:outline-none focus:ring-2 accent-ring-focus">
+    <button (click)="useCurrentLocation()" class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg hover:bg-white/30 transition-colors">
+      <i class="fas fa-location-arrow"></i>
+    </button>
+  </div>
+
+  <div class="relative z-10 flex-1 flex items-center justify-center">
+    @if (loading()) {
+      <div class="text-center">
+        <i class="fas fa-spinner fa-spin text-4xl"></i>
+        <p>Loading Weather...</p>
+      </div>
+    } @else if (error()) {
+      <div class="text-center bg-red-500/50 p-4 rounded-lg">
+        <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+        <p>{{ error() }}</p>
+      </div>
+    } @else if (weather()) {
+      <div class="text-center">
+        <h1 class="text-4xl md:text-6xl font-bold">{{ weather().name }}</h1>
+        <p class="text-xl md:text-2xl capitalize">{{ weather().weather[0].description }}</p>
+        <div class="flex items-center justify-center my-4">
+          <img [src]="'https://openweathermap.org/img/wn/' + weather().weather[0].icon + '@2x.png'" alt="weather icon" class="w-20 h-20">
+          <p class="text-6xl md:text-8xl font-thin">{{ weather().main.temp | number:'1.0-0' }}°C</p>
+        </div>
+        <div class="flex justify-center gap-4 md:gap-8 text-lg">
+          <p>Feels like: {{ weather().main.feels_like | number:'1.0-0' }}°</p>
+          <p>Humidity: {{ weather().main.humidity }}%</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,36 @@
+
+<div class="h-full bg-gray-900 text-gray-200 flex flex-col p-4 overflow-x-auto">
+  <h2 class="text-2xl font-bold mb-4 flex-shrink-0">Kanban Board</h2>
+  <div class="flex-1 flex gap-4">
+    <!-- Columns -->
+    @for (col of board(); track col.id) {
+      <div class="kanban-column" 
+           (dragover)="onDragOver($event)" 
+           (drop)="onDrop($event, col.id)"
+           (dragenter)="onDragEnter($event)"
+           (dragleave)="onDragLeave($event)">
+        <h3 class="font-semibold p-2 mb-2">{{ col.title }}</h3>
+        <div class="flex-1 overflow-y-auto p-2 space-y-2">
+          <!-- Tasks -->
+          @for (task of col.tasks; track task.id) {
+            <div class="kanban-card" 
+                 draggable="true" 
+                 (dragstart)="onDragStart(col.id, task.id)">
+              {{ task.content }}
+            </div>
+          }
+        </div>
+        <button (click)="addTask(col.id)" class="add-task-btn">
+          <i class="fas fa-plus mr-2"></i>Add Task
+        </button>
+      </div>
+    }
+
+    <!-- Add New Column -->
+    <div class="flex-shrink-0 w-72">
+      <button (click)="addColumn()" class="w-full h-12 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-colors">
+        <i class="fas fa-plus mr-2"></i>Add Another Column
+      </button>
+    </div>
+  </div>
+</div>
