@@ -1,0 +1,26 @@
+{
+  "name": "Banana OS",
+  "short_name": "BananaOS",
+  "description": "A fully functional web-based desktop environment simulator built with Angular.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/128/744/744422.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/192/744/744422.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/744/744422.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

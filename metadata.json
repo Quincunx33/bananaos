@@ -1,0 +1,7 @@
+{
+  "name": "Banana OS",
+  "description": "A fully functional web-based desktop environment simulator built with Angular. It features a windowing system, taskbar, start menu, and a suite of applications including a terminal, browser, settings, calculator, weather, camera, and more.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
