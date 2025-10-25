@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, ElementRef, ViewChild, AfterViewChecked, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { OsInteractionService, CopilotAction, InAppAction, CodeRepairPayload } from '../../../services/os-interaction.service';
 import { WeatherService } from '../../../services/weather.service';
 import { APPS_CONFIG } from '../../../config/apps.config';
@@ -37,7 +37,7 @@ export class CopilotComponent implements AfterViewChecked {
   isLoading = signal(false);
   error = signal<string | null>(null);
   
-  private ai: GoogleGenerativeAI | null = null;
+  private ai: GoogleGenAI | null = null;
   private readonly systemInstruction: string;
   private userBugReport = '';
 
@@ -45,7 +45,7 @@ export class CopilotComponent implements AfterViewChecked {
      effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI({ apiKey });
+        this.ai = new GoogleGenAI({ apiKey });
         this.error.set(null);
       } else {
         this.ai = null;
