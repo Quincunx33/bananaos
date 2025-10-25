@@ -6,8 +6,8 @@ interface Tile {
   value: number;
   row: number;
   col: number;
-  isNew?: boolean;
-  isMerged?: boolean;
+  isNew: boolean;
+  isMerged: boolean;
   previousRow?: number;
   previousCol?: number;
 }
@@ -59,7 +59,8 @@ export class Game2048Component implements OnInit {
         value: Math.random() < 0.9 ? 2 : 4,
         row: r,
         col: c,
-        isNew: true
+        isNew: true,
+        isMerged: false
       });
     }
     return tiles;
@@ -109,6 +110,7 @@ export class Game2048Component implements OnInit {
               row: next.r,
               col: next.c,
               isMerged: true,
+              isNew: false,
             };
             this.score.update(s => s + merged.value);
             

@@ -1,5 +1,5 @@
 import { Component, input, output, effect, viewChild, ElementRef, Renderer2, inject, signal } from '@angular/core';
-import { AppWindow } from '../../../models/window.model';
+import { AppWindow } from '../../models/window.model';
 import { CommonModule } from '@angular/common';
 
 @Component({

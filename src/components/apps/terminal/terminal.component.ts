@@ -36,7 +36,7 @@ export class TerminalComponent {
     effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI(apiKey);
+        this.ai = new GoogleGenerativeAI({ apiKey });
       } else {
         this.ai = null;
       }
@@ -129,10 +129,11 @@ Theme: Dark
           const prompt = args.join(' ');
           if (!prompt) return 'Please provide a prompt for the AI. Usage: ai "your question"';
           
-          const model = this.ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          return response.text();
+          const response = await this.ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+          });
+          return response.text;
         } catch (e) {
           console.error(e);
           this.notificationService.show({ appId: 'terminal', title: 'Terminal', body: 'Could not get response from AI.', type: 'error' });
