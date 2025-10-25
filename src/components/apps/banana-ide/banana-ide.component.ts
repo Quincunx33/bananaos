@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal, effect, inject, viewChild, 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { ApiKeyService } from '../../../services/api-key.service';
 
 declare var hljs: any;
@@ -18,7 +18,7 @@ declare var hljs: any;
 export class BananaIdeComponent {
   private sanitizer = inject(DomSanitizer);
   private apiKeyService = inject(ApiKeyService);
-  private ai: GoogleGenerativeAI | null = null;
+  private ai: GoogleGenAI | null = null;
   
   codeBlock = viewChild<ElementRef>('codeBlock');
 
@@ -37,7 +37,7 @@ export class BananaIdeComponent {
     effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI({ apiKey });
+        this.ai = new GoogleGenAI({ apiKey });
       } else {
         this.ai = null;
       }

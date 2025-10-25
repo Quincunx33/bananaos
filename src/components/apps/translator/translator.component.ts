@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { ApiKeyService } from '../../../services/api-key.service';
 
 @Component({
@@ -23,13 +23,13 @@ export class TranslatorComponent {
   languages = ['English', 'Spanish', 'French', 'German', 'Japanese', 'Chinese', 'Russian', 'Arabic'];
 
   private apiKeyService = inject(ApiKeyService);
-  private ai: GoogleGenerativeAI | null = null;
+  private ai: GoogleGenAI | null = null;
 
   constructor() {
     effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI({ apiKey });
+        this.ai = new GoogleGenAI({ apiKey });
         this.error.set(null);
       } else {
         this.ai = null;

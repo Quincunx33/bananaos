@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, signal, inject, DestroyRef, effect } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { NotificationService } from '../../../services/notification.service';
 import { OsInteractionService } from '../../../services/os-interaction.service';
 import { ApiKeyService } from '../../../services/api-key.service';
@@ -30,13 +30,13 @@ export class TerminalComponent {
   private osInteraction = inject(OsInteractionService);
   private apiKeyService = inject(ApiKeyService);
   private destroyRef = inject(DestroyRef);
-  private ai: GoogleGenerativeAI | null = null;
+  private ai: GoogleGenAI | null = null;
   
   constructor() {
     effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI({ apiKey });
+        this.ai = new GoogleGenAI({ apiKey });
       } else {
         this.ai = null;
       }
