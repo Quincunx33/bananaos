@@ -1,0 +1,72 @@
+<div class="h-full bg-gray-900 text-gray-200 p-6 overflow-y-auto font-sans">
+  <header class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-3xl font-bold">Activity Dashboard</h2>
+      <p class="text-gray-400">Today's Summary</p>
+    </div>
+  </header>
+
+  <!-- Daily Stats Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+    <div class="stat-card bg-blue-900/50 border-blue-500/50">
+      <i class="fas fa-shoe-prints text-blue-400 text-2xl"></i>
+      <p class="mt-2 text-3xl font-bold">{{ steps() | number }}</p>
+      <p class="text-sm text-gray-400">Steps</p>
+    </div>
+    <div class="stat-card bg-red-900/50 border-red-500/50">
+      <i class="fas fa-fire-alt text-red-400 text-2xl"></i>
+      <p class="mt-2 text-3xl font-bold">{{ calories() | number }}</p>
+      <p class="text-sm text-gray-400">Calories</p>
+    </div>
+    <div class="stat-card bg-green-900/50 border-green-500/50">
+      <i class="fas fa-bolt text-green-400 text-2xl"></i>
+      <p class="mt-2 text-3xl font-bold">{{ activeMinutes() | number }}</p>
+      <p class="text-sm text-gray-400">Active Mins</p>
+    </div>
+    <div class="stat-card bg-purple-900/50 border-purple-500/50">
+      <i class="fas fa-route text-purple-400 text-2xl"></i>
+      <p class="mt-2 text-3xl font-bold">{{ distance() | number:'1.1-1' }} <span class="text-lg">km</span></p>
+      <p class="text-sm text-gray-400">Distance</p>
+    </div>
+  </div>
+
+  <!-- Weekly Summary & Recent Activities -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Weekly Chart -->
+    <div class="lg:col-span-2 bg-gray-800/60 p-6 rounded-xl">
+      <h3 class="text-xl font-semibold mb-4">Weekly Steps</h3>
+      <div class="flex justify-between items-end h-48">
+        @for (steps of weeklySteps(); track $index; let i = $index) {
+          <div class="flex flex-col items-center w-full">
+            <div class="w-1/2 bg-gray-700 rounded-t-lg flex-grow flex items-end">
+              <div class="w-full accent-bg rounded-t-lg" [style.height]="getBarHeight(steps)"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">{{ weekDays[i] }}</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="lg:col-span-1 bg-gray-800/60 p-6 rounded-xl">
+      <h3 class="text-xl font-semibold mb-4">Recent Activities</h3>
+      <div class="space-y-4">
+        @for (activity of recentActivities(); track $index) {
+          <div class="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-800">
+              <i class="text-lg" [ngClass]="activity.icon"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold">{{ activity.type }} - {{ activity.distance }}</p>
+              <p class="text-xs text-gray-400">{{ activity.time }}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold">{{ activity.calories }}</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

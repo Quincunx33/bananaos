@@ -1,0 +1,140 @@
+<div class="h-full w-full flex flex-col bg-gray-900/50 text-gray-200 from-gray-900 to-gray-800 bg-gradient-to-br">
+  <div class="flex-shrink-0 flex border-b border-white/10">
+    <button (click)="activeTab.set('social')" class="tab-btn" [class.active]="activeTab() === 'social'">
+      <i class="fas fa-users mr-2"></i>Social Profiles
+    </button>
+    <button (click)="activeTab.set('email')" class="tab-btn" [class.active]="activeTab() === 'email'">
+      <i class="fas fa-envelope mr-2"></i>Contact Me
+    </button>
+  </div>
+
+  <div class="flex-1 p-6 overflow-y-auto">
+    @switch (activeTab()) {
+      @case ('social') {
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-3xl font-bold mb-8 text-center text-white/90">Connect With Me</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <!-- GitHub Card -->
+            <div class="profile-card">
+              <div class="profile-banner github-banner"></div>
+              <div class="profile-avatar-wrapper">
+                <i class="fab fa-github text-4xl"></i>
+              </div>
+              <div class="profile-body">
+                <h3 class="text-xl font-bold">Nafis Fuhad</h3>
+                <p class="text-gray-400 text-sm">@nafis548</p>
+                <div class="profile-stats">
+                  <div>
+                    <p class="font-bold text-xl">32</p>
+                    <p class="text-xs text-gray-500">Repos</p>
+                  </div>
+                   <div>
+                    <p class="font-bold text-xl">15</p>
+                    <p class="text-xs text-gray-500">Followers</p>
+                  </div>
+                </div>
+                 <button (click)="openLink('https://github.com/nafis548')" class="profile-btn">
+                  View Profile
+                </button>
+              </div>
+            </div>
+            <!-- Facebook Card -->
+            <div class="profile-card">
+               <div class="profile-banner facebook-banner"></div>
+               <div class="profile-avatar-wrapper">
+                <i class="fab fa-facebook text-4xl"></i>
+              </div>
+              <div class="profile-body">
+                <h3 class="text-xl font-bold">Nafis Fuhad</h3>
+                <p class="text-gray-400 text-sm">/nafisfuhad26</p>
+                <div class="profile-stats">
+                  <div>
+                    <p class="font-bold text-xl">1.2K</p>
+                    <p class="text-xs text-gray-500">Friends</p>
+                  </div>
+                   <div>
+                    <p class="font-bold text-xl">250</p>
+                    <p class="text-xs text-gray-500">Followers</p>
+                  </div>
+                </div>
+                <button (click)="openLink('https://www.facebook.com/nafisfuhad26')" class="profile-btn">
+                  View Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      @case ('email') {
+        <div class="max-w-4xl mx-auto">
+           <h2 class="text-3xl font-bold mb-8 text-center text-white/90">Get In Touch</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Form Card -->
+            <div class="glass-card p-6 md:p-8">
+              <form class="space-y-5">
+                <div class="relative">
+                   <i class="fas fa-user-check absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                   <input type="text" [value]="email().to" readonly class="form-input cursor-not-allowed bg-gray-700/50">
+                </div>
+                 <div class="relative">
+                   <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                   <input type="text"
+                          name="fromName" 
+                          placeholder="Your Name" 
+                          class="form-input"
+                          [ngModel]="email().fromName"
+                          (ngModelChange)="updateEmailField('fromName', $event)">
+                </div>
+                 <div class="relative">
+                   <i class="fas fa-at absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                   <input type="email"
+                          name="fromEmail" 
+                          placeholder="Your Email" 
+                          class="form-input"
+                          [ngModel]="email().fromEmail"
+                          (ngModelChange)="updateEmailField('fromEmail', $event)">
+                </div>
+                <div class="relative">
+                   <i class="fas fa-heading absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                   <input type="text" 
+                          name="subject" 
+                          placeholder="Subject" 
+                          class="form-input"
+                          [ngModel]="email().subject"
+                          (ngModelChange)="updateEmailField('subject', $event)">
+                </div>
+                <div class="relative">
+                   <i class="fas fa-align-left absolute left-4 top-5 text-gray-400"></i>
+                   <textarea name="body" 
+                             rows="4" 
+                             placeholder="Your message..." 
+                             class="form-input !h-auto"
+                             [ngModel]="email().body"
+                             (ngModelChange)="updateEmailField('body', $event)"></textarea>
+                </div>
+                <div class="pt-2">
+                  <a [href]="mailtoLink" target="_blank" class="send-btn">
+                    <span>Send via Email Client</span>
+                    <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+              </form>
+            </div>
+            <!-- Info Card -->
+            <div class="glass-card p-8 flex flex-col items-center justify-center text-center contact-info-panel">
+              <!-- Icon is now positioned absolutely and removed from the flex layout flow -->
+              <i class="fas fa-paper-plane text-9xl text-white/10 absolute -bottom-4 -right-4 -rotate-12 z-0 opacity-50"></i>
+              <!-- Content is wrapped to be the single flex item, ensuring proper centering -->
+              <div class="relative z-10">
+                <h3 class="text-2xl font-bold">Let's Connect</h3>
+                <p class="mt-2 text-sm text-gray-400">
+                  Clicking the send button will open your default email client with the fields pre-filled, ready for you to send.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .paint-control {
+    @apply w-10 h-10 rounded-lg border-2 border-transparent transition-all flex items-center justify-center text-lg;
+  }
+
+  .paint-control.active {
+    @apply bg-gray-700 border-gray-500;
+  }
+  
+  .custom-color-picker {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    width: 2rem; /* w-8 */
+    height: 2rem; /* h-8 */
+    border: none;
+    cursor: pointer;
+  }
+  .custom-color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  .custom-color-picker::-webkit-color-swatch {
+    border-radius: 9999px; /* rounded-full */
+    border: 2px solid #4b5563; /* gray-600 */
+  }
+  .custom-color-picker::-moz-color-swatch {
+    border-radius: 9999px; /* rounded-full */
+    border: 2px solid #4b5563; /* gray-600 */
+  }
+}

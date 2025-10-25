@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .ide-select {
+    @apply w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus;
+  }
+  .ide-textarea {
+    @apply w-full bg-gray-900/50 border border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 accent-ring-focus resize-none;
+  }
+  .ide-btn {
+    @apply w-full text-white font-semibold px-4 py-2 rounded-md transition-opacity flex items-center justify-center;
+  }
+}
+
+.editor-textarea, .editor-pre, .editor-pre code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 1rem;
+}
+
+.editor-textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: transparent;
+    caret-color: white;
+    outline: none;
+    resize: none;
+    z-index: 1;
+}
+
+.editor-pre {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0 !important;
+}
+
+.editor-pre code {
+    display: block;
+    min-height: 100%;
+}

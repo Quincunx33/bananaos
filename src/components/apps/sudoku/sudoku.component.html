@@ -1,0 +1,36 @@
+<div class="h-full w-full flex flex-col items-center justify-center bg-gray-800 p-4 font-sans text-white">
+  <div class="w-full max-w-sm">
+    <div class="grid grid-cols-9 grid-rows-9 aspect-square w-full bg-gray-700 gap-px border-2 border-gray-600">
+      @for (row of board(); track $index; let r = $index) {
+        @for (cell of row; track $index; let c = $index) {
+          <div class="sudoku-cell"
+               (click)="selectCell(r, c)"
+               [class.given]="cell.isGiven"
+               [class.selected]="selectedCell()?.row === r && selectedCell()?.col === c"
+               [class.highlighted]="r === highlightedRow() || c === highlightedCol() || isCellInHighlightedBox(r, c)"
+               [class.num-highlighted]="cell.value !== null && cell.value === highlightedNum()"
+               [class.invalid]="cell.isInvalid"
+               [class.border-r-2]="c === 2 || c === 5"
+               [class.border-b-2]="r === 2 || r === 5"
+               [class.border-gray-600]="true">
+            {{ cell.value }}
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="mt-4 flex items-center gap-2">
+    @for (num of [1,2,3,4,5,6,7,8,9]; track num) {
+      <button (click)="setNumber(num)" class="control-btn">{{ num }}</button>
+    }
+    <button (click)="eraseNumber()" class="control-btn"><i class="fas fa-eraser"></i></button>
+  </div>
+  
+  @if (isComplete()) {
+    <div class="mt-4 text-center p-4 bg-green-500/30 rounded-lg">
+      <h3 class="text-xl font-bold text-green-300">Congratulations! Puzzle Solved!</h3>
+      <button (click)="newGame()" class="mt-2 px-3 py-1 bg-green-600 rounded">New Game</button>
+    </div>
+  }
+</div>

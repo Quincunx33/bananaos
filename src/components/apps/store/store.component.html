@@ -1,0 +1,42 @@
+<div class="h-full bg-gray-900/80 backdrop-blur-sm text-gray-200 overflow-y-auto">
+  <div class="p-6">
+    <h2 class="text-3xl font-bold mb-2">App Store</h2>
+    <p class="text-gray-400 mb-8">Discover apps and games for Banana OS.</p>
+  </div>
+  
+  <div class="px-6 pb-6 space-y-8">
+    @for (category of categorizedApps(); track category[0]) {
+      <section>
+        <h3 class="text-xl font-semibold mb-4 text-white/90 border-b-2 border-gray-700 pb-2">{{ category[0] }}</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          @for (app of category[1]; track app.id) {
+            <div class="bg-gray-800/60 p-4 rounded-lg flex flex-col text-center transition-all duration-300 hover:bg-gray-700/80 hover:-translate-y-1">
+              <i class="text-5xl mb-4" [ngClass]="app.icon"></i>
+              <div class="flex flex-col flex-grow w-full">
+                  <h3 class="font-bold text-base mb-1">{{ app.title }}</h3>
+                  <p class="text-xs text-gray-400 flex-grow mb-4 h-10">{{ app.description }}</p>
+              </div>
+              <div class="w-full">
+                @if (app.isCore) {
+                  <button class="w-full bg-gray-600 text-white font-semibold px-4 py-2 rounded-md text-sm cursor-not-allowed opacity-70">
+                    <i class="fas fa-check mr-2"></i>Installed
+                  </button>
+                } @else {
+                  @if (appManagementService.isAppInstalled(app.id)) {
+                    <button (click)="uninstall(app)" class="w-full bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-md text-sm transition-colors">
+                      Uninstall
+                    </button>
+                  } @else {
+                    <button (click)="install(app)" class="w-full accent-bg hover:opacity-90 text-white font-semibold px-4 py-2 rounded-md text-sm transition-colors">
+                      Install
+                    </button>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+</div>

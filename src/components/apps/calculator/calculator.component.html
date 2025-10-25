@@ -1,0 +1,31 @@
+
+<div class="h-full bg-gray-800 flex flex-col p-2 gap-2">
+  <div class="text-right text-white text-5xl font-light p-4 bg-gray-900/50 rounded-lg mb-2 overflow-x-auto">
+    {{ display() }}
+  </div>
+  <div class="grid grid-cols-4 gap-2 flex-1">
+    <button (click)="onKeyPress('AC')" class="calc-btn bg-gray-500 hover:bg-gray-400">AC</button>
+    <button (click)="onKeyPress('+/-')" class="calc-btn bg-gray-500 hover:bg-gray-400">+/-</button>
+    <button (click)="onKeyPress('%')" class="calc-btn bg-gray-500 hover:bg-gray-400">%</button>
+    <button (click)="onKeyPress('/')" class="calc-btn-op">/</button>
+    
+    <button (click)="onKeyPress('7')" class="calc-btn">7</button>
+    <button (click)="onKeyPress('8')" class="calc-btn">8</button>
+    <button (click)="onKeyPress('9')" class="calc-btn">9</button>
+    <button (click)="onKeyPress('*')" class="calc-btn-op">x</button>
+    
+    <button (click)="onKeyPress('4')" class="calc-btn">4</button>
+    <button (click)="onKeyPress('5')" class="calc-btn">5</button>
+    <button (click)="onKeyPress('6')" class="calc-btn">6</button>
+    <button (click)="onKeyPress('-')" class="calc-btn-op">-</button>
+    
+    <button (click)="onKeyPress('1')" class="calc-btn">1</button>
+    <button (click)="onKeyPress('2')" class="calc-btn">2</button>
+    <button (click)="onKeyPress('3')" class="calc-btn">3</button>
+    <button (click)="onKeyPress('+')" class="calc-btn-op">+</button>
+    
+    <button (click)="onKeyPress('0')" class="calc-btn col-span-2">0</button>
+    <button (click)="onKeyPress('.')" class="calc-btn">.</button>
+    <button (click)="onKeyPress('=')" class="calc-btn-op">=</button>
+  </div>
+</div>

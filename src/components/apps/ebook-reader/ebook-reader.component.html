@@ -1,0 +1,59 @@
+<div class="h-full w-full bg-gray-800 text-gray-200 font-serif">
+  @if (!readingMode()) {
+    <!-- Library View -->
+    <div class="p-6">
+      <h2 class="text-3xl font-bold mb-6 font-sans">My Library</h2>
+      <div class="flex flex-wrap gap-8">
+        @for (book of books(); track book.id) {
+          <div (click)="openBook(book)" class="flex flex-col items-center cursor-pointer group">
+            <div class="book-cover">
+              <img [src]="book.coverUrl" [alt]="book.title" class="w-full h-full object-cover">
+            </div>
+            <h3 class="mt-2 font-semibold text-center group-hover:accent-text">{{ book.title }}</h3>
+            <p class="text-sm text-gray-400 text-center">{{ book.author }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  } @else if (currentBook(); as book) {
+    <!-- Reader View -->
+    <div class="h-full flex flex-col">
+      <header class="flex-shrink-0 p-3 bg-gray-900/60 backdrop-blur-sm flex items-center justify-between border-b border-gray-700/50 z-10">
+        <div class="flex items-center gap-3">
+          <button (click)="closeReader()" class="w-8 h-8 rounded-full hover:bg-gray-700 flex items-center justify-center">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div>
+            <h3 class="font-semibold font-sans">{{ book.title }}</h3>
+            <p class="text-xs text-gray-400 font-sans">{{ currentChapter()?.title }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="changeFontSize(-1)" class="w-8 h-8 rounded-full hover:bg-gray-700 flex items-center justify-center font-sans">A-</button>
+          <button (click)="changeFontSize(1)" class="w-8 h-8 rounded-full hover:bg-gray-700 flex items-center justify-center font-sans">A+</button>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-8 md:p-12 lg:p-16" [style.font-size.px]="fontSize()">
+        @if (currentChapter(); as chapter) {
+          <h2 class="text-3xl font-bold mb-6 text-center">{{ chapter.title }}</h2>
+          @for (paragraph of chapter.content; track $index) {
+            <p class="mb-4 leading-relaxed indent-8">{{ paragraph }}</p>
+          }
+        }
+      </main>
+
+      <footer class="flex-shrink-0 p-3 bg-gray-900/60 backdrop-blur-sm flex items-center justify-between border-t border-gray-700/50">
+        <button (click)="prevChapter()" [disabled]="currentChapterIndex() === 0" class="px-4 py-2 rounded-md hover:bg-gray-700 disabled:opacity-50 font-sans">
+          <i class="fas fa-chevron-left mr-2"></i> Previous
+        </button>
+        <div class="text-sm text-gray-400 font-sans">
+          Chapter {{ currentChapterIndex() + 1 }} of {{ book.chapters.length }}
+        </div>
+        <button (click)="nextChapter()" [disabled]="currentChapterIndex() === book.chapters.length - 1" class="px-4 py-2 rounded-md hover:bg-gray-700 disabled:opacity-50 font-sans">
+          Next <i class="fas fa-chevron-right ml-2"></i>
+        </button>
+      </footer>
+    </div>
+  }
+</div>

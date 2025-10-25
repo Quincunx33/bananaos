@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card-pile {
+    @apply w-24 h-36 bg-green-900/50 rounded-lg border-2 border-dashed border-white/20 relative;
+  }
+  .card-pile.foundation::before {
+    @apply absolute inset-0 flex items-center justify-center text-4xl text-white/10;
+    content: '♠'; /* Example suit */
+  }
+  .card {
+    @apply w-24 h-36 rounded-lg shadow-md cursor-pointer transition-transform duration-150;
+  }
+  .card.selected {
+    @apply ring-2 ring-yellow-400 ring-offset-2 ring-offset-green-800 transform scale-105;
+  }
+  .card .face, .card .back {
+    @apply w-full h-full rounded-lg flex items-center justify-center text-3xl font-bold;
+  }
+  .card .face {
+    @apply bg-white text-black;
+  }
+  .card .back {
+    @apply bg-blue-600;
+    background-image:
+      linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
+      linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+  }
+
+  .card .face.hearts::after,
+  .card .face.diamonds::after,
+  .card .face.clubs::after,
+  .card .face.spades::after {
+    @apply absolute text-lg;
+    bottom: 0.5rem;
+    right: 0.5rem;
+  }
+  .card .face.hearts::after { content: '♥'; @apply text-red-600; }
+  .card .face.diamonds::after { content: '♦'; @apply text-red-600; }
+  .card .face.clubs::after { content: '♣'; }
+  .card .face.spades::after { content: '♠'; }
+}

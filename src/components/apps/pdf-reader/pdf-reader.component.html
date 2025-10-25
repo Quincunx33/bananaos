@@ -1,0 +1,30 @@
+<div class="h-full flex flex-col bg-gray-800 text-white">
+  <div class="flex-shrink-0 p-2 bg-gray-900/50 flex items-center justify-between gap-4">
+    <h3 class="font-semibold px-2 truncate">{{ fileName() || 'PDF Reader' }}</h3>
+    <div class="flex items-center gap-2">
+       <input type="file" #fileInput class="hidden" accept="application/pdf" (change)="openLocalFile($event)">
+       <button (click)="fileInput.click()" class="w-10 h-10 hover:bg-gray-700 rounded-full" title="Open PDF">
+         <i class="fas fa-folder-open"></i>
+       </button>
+    </div>
+  </div>
+
+  <div class="flex-1 flex items-center justify-center p-1 bg-gray-700">
+    @if (pdfSrc(); as src) {
+      <iframe [src]="src" class="w-full h-full" title="PDF Viewer"></iframe>
+    } @else if (error(); as errorMsg) {
+       <div class="text-center text-red-400">
+        <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+        <p>{{ errorMsg }}</p>
+      </div>
+    } @else {
+      <div class="text-center text-gray-500 flex flex-col items-center justify-center">
+        <i class="fas fa-file-pdf text-6xl mb-4"></i>
+        <p class="mb-4">No PDF loaded.</p>
+        <button (click)="fileInput.click()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity text-sm">
+          <i class="fas fa-folder-open mr-2"></i>Open PDF
+        </button>
+      </div>
+    }
+  </div>
+</div>

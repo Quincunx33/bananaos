@@ -1,0 +1,44 @@
+<div class="h-full w-full flex flex-col items-center justify-center bg-gray-800 p-4 font-sans text-white select-none">
+  <div class="flex items-center justify-between w-full max-w-sm mb-4">
+    <h1 class="text-5xl font-bold">2048</h1>
+    <div class="flex gap-2">
+        <div class="bg-gray-700 p-2 rounded-lg text-center">
+            <div class="text-sm text-gray-400">SCORE</div>
+            <div class="text-2xl font-bold">{{ score() }}</div>
+        </div>
+        <button (click)="newGame()" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg font-bold">New Game</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-4 grid-rows-4 gap-3 bg-gray-600 p-3 rounded-lg w-full max-w-sm aspect-square relative">
+    <!-- Background Tiles -->
+    @for (i of [0,1,2,3]; track i) {
+        @for (j of [0,1,2,3]; track j) {
+            <div class="tile-bg"></div>
+        }
+    }
+    <!-- Animated Tiles -->
+    <div class="absolute inset-0">
+       @for (tile of tiles(); track tile.id) {
+            <div class="tile" 
+                 [style.transform]="'translate(' + tile.col * 100 + '%, ' + tile.row * 100 + '%)'"
+                 [attr.data-value]="tile.value"
+                 [class.new]="tile.isNew"
+                 [class.merged]="tile.isMerged">
+                {{ tile.value }}
+            </div>
+       }
+    </div>
+
+    @if (gameOver()) {
+        <div class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center rounded-lg z-10">
+            <h2 class="text-4xl font-bold">Game Over!</h2>
+            <button (click)="newGame()" class="mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg font-bold">Try Again</button>
+        </div>
+    }
+  </div>
+   <div class="mt-4 text-gray-400 text-center">
+    <p>Use your <span class="font-bold">arrow keys</span> to move the tiles.</p>
+    <p>When two tiles with the same number touch, they <span class="font-bold">merge into one!</span></p>
+  </div>
+</div>

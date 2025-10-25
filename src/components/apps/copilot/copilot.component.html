@@ -1,0 +1,49 @@
+
+<div class="h-full flex flex-col bg-gray-800 text-gray-200">
+  <header class="flex-shrink-0 p-3 bg-gray-900/50 backdrop-blur-sm flex items-center gap-3 border-b border-gray-700/50">
+    <i class="fas fa-robot text-2xl text-cyan-400"></i>
+    <div>
+      <h2 class="font-bold text-lg">Banana Copilot</h2>
+      <p class="text-xs text-gray-400">Your AI Assistant</p>
+    </div>
+  </header>
+
+  <div #chatContainer class="flex-1 p-4 space-y-4 overflow-y-auto">
+    @for(message of chatHistory(); track $index) {
+      <div class="flex" [class.justify-end]="message.sender === 'user'">
+        @if (message.sender === 'bot') {
+          <div class="chat-bubble bot-bubble">
+            @if (message.isThinking) {
+              <div class="thinking-dots">
+                <span></span><span></span><span></span>
+              </div>
+            } @else {
+              <span>{{ message.text }}</span>
+            }
+          </div>
+        } @else {
+          <div class="chat-bubble user-bubble">
+            <span>{{ message.text }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <footer class="flex-shrink-0 p-3 border-t border-gray-700/50">
+    @if(error(); as errorMsg) {
+      <p class="text-red-400 text-xs mb-2 text-center">{{ errorMsg }}</p>
+    }
+    <div class="flex items-center gap-3">
+      <input type="text" 
+             placeholder="Ask me to do something..."
+             [(ngModel)]="userInput"
+             (keyup.enter)="sendMessage()"
+             [disabled]="isLoading()"
+             class="flex-1 bg-gray-700 border border-gray-600 rounded-full px-4 py-2 focus:outline-none focus:ring-2 accent-ring-focus disabled:opacity-50">
+      <button (click)="sendMessage()" [disabled]="isLoading() || !userInput().trim()" class="w-10 h-10 flex-shrink-0 accent-bg text-white rounded-full flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-wait">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </footer>
+</div>

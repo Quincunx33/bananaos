@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.tile-bg {
+    @apply w-full h-full bg-gray-500 rounded-md;
+}
+
+.tile {
+    position: absolute;
+    width: calc(25% - 0.75rem);
+    height: calc(25% - 0.75rem);
+    margin: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.75rem; /* 28px */
+    border-radius: 0.375rem; /* 6px */
+    transition: transform 100ms ease-in-out;
+    will-change: transform;
+}
+
+.tile.new {
+    animation: appear 200ms ease-in-out;
+}
+
+.tile.merged {
+    animation: pop 200ms ease-in-out;
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+[data-value="2"] { background-color: #eee4da; color: #776e65; }
+[data-value="4"] { background-color: #ede0c8; color: #776e65; }
+[data-value="8"] { background-color: #f2b179; color: #f9f6f2; }
+[data-value="16"] { background-color: #f59563; color: #f9f6f2; }
+[data-value="32"] { background-color: #f67c5f; color: #f9f6f2; }
+[data-value="64"] { background-color: #f65e3b; color: #f9f6f2; }
+[data-value="128"] { background-color: #edcf72; color: #f9f6f2; font-size: 1.5rem; }
+[data-value="256"] { background-color: #edcc61; color: #f9f6f2; font-size: 1.5rem; }
+[data-value="512"] { background-color: #edc850; color: #f9f6f2; font-size: 1.5rem; }
+[data-value="1024"] { background-color: #edc53f; color: #f9f6f2; font-size: 1.25rem; }
+[data-value="2048"] { background-color: #edc22e; color: #f9f6f2; font-size: 1.25rem; }
+[data-value="4096"] { background-color: #3c3a32; color: #f9f6f2; font-size: 1.25rem; }
+[data-value="8192"] { background-color: #3c3a32; color: #f9f6f2; font-size: 1.25rem; }

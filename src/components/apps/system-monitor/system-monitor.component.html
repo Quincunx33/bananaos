@@ -1,0 +1,19 @@
+
+<div class="h-full w-full flex flex-col bg-gray-900 text-gray-300 font-sans overflow-hidden">
+  <svg class="w-full h-full">
+    <!-- Links -->
+    @for (link of graphLinksWithPositions(); track $index) {
+      <line [attr.x1]="link.x1" [attr.y1]="link.y1" [attr.x2]="link.x2" [attr.y2]="link.y2" class="link" />
+    }
+
+    <!-- Nodes -->
+    @for (node of systemGraph().nodes; track node.id) {
+      <foreignObject [attr.x]="node.x - 50" [attr.y]="node.y - 30" width="100" height="60">
+        <div class="node-container" [ngClass]="'node-' + node.type">
+          <i class="text-2xl" [ngClass]="node.icon"></i>
+          <span class="text-xs font-semibold text-center mt-1">{{ node.label }}</span>
+        </div>
+      </foreignObject>
+    }
+  </svg>
+</div>

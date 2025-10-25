@@ -1,0 +1,38 @@
+<div class="h-full flex flex-col bg-gray-800 text-gray-200 p-4 font-sans">
+  <!-- Header -->
+  <header class="flex items-center justify-between mb-4 flex-shrink-0">
+    <h2 class="text-xl font-bold">
+      {{ monthName() }} <span class="text-gray-400">{{ year() }}</span>
+    </h2>
+    <div class="flex items-center gap-2">
+      <button (click)="goToToday()" class="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded-md">Today</button>
+      <button (click)="goToPreviousMonth()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-700 rounded-full">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button (click)="goToNextMonth()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-700 rounded-full">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Calendar Grid -->
+  <div class="grid grid-cols-7 gap-1 flex-1">
+    <!-- Weekday headers -->
+    @for (day of weekdays; track day) {
+      <div class="text-center font-medium text-xs text-gray-400 py-2">
+        {{ day }}
+      </div>
+    }
+    
+    <!-- Day cells -->
+    @for (day of calendarGrid(); track day.date) {
+      <div class="flex items-center justify-center rounded-lg text-sm"
+           [class.text-gray-500]="!day.isCurrentMonth"
+           [class.accent-bg]="day.isToday"
+           [class.text-white]="day.isToday"
+           [class.font-bold]="day.isToday">
+        {{ day.dayOfMonth }}
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .stat-card {
+    @apply p-6 rounded-xl border-l-4;
+  }
+}

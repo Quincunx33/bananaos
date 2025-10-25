@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure Tailwind processes these dynamic classes */
+.bg-cyan { background-color: #06b6d4; }
+.bg-yellow { background-color: #eab308; }
+.bg-purple { background-color: #8b5cf6; }
+.bg-green { background-color: #22c55e; }
+.bg-red { background-color: #ef4444; }
+.bg-orange { background-color: #f97316; }
+.bg-blue { background-color: #3b82f6; }
+.bg-black { background-color: #111827; }

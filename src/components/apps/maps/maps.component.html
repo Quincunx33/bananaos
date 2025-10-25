@@ -1,0 +1,11 @@
+<div class="h-full flex flex-col bg-gray-800">
+  <div class="flex-shrink-0 p-2 bg-gray-700 flex items-center gap-2">
+    <div class="flex-1 relative">
+      <i class="fas fa-search text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+      <input type="text" [value]="searchQuery()" (change)="onSearch($event)" placeholder="Search for a location..." class="w-full bg-gray-900 rounded-full py-1.5 pl-9 pr-3 text-white focus:outline-none focus:ring-2 accent-ring-focus">
+    </div>
+  </div>
+  <div class="flex-1 bg-white">
+    <iframe [src]="mapUrl()" class="w-full h-full border-0" loading="lazy"></iframe>
+  </div>
+</div>

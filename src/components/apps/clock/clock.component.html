@@ -1,0 +1,67 @@
+<div class="h-full flex flex-col bg-gray-900 text-gray-200 font-sans">
+  <!-- Tabs -->
+  <div class="flex-shrink-0 flex border-b border-gray-700/50">
+    <button (click)="activeTab.set('clock')" class="tab-btn" [class.active]="activeTab() === 'clock'">
+      <i class="fas fa-globe-americas mr-2"></i>World Clock
+    </button>
+    <button (click)="activeTab.set('stopwatch')" class="tab-btn" [class.active]="activeTab() === 'stopwatch'">
+      <i class="fas fa-stopwatch mr-2"></i>Stopwatch
+    </button>
+    <button (click)="activeTab.set('timer')" class="tab-btn" [class.active]="activeTab() === 'timer'">
+      <i class="fas fa-hourglass-half mr-2"></i>Timer
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 flex items-center justify-center p-6">
+    @switch (activeTab()) {
+      @case ('clock') {
+        <div class="text-center">
+          <h3 class="text-xl text-gray-400">Local Time</h3>
+          <div class="text-6xl font-bold my-2">{{ currentTime() | date:'h:mm:ss a' }}</div>
+          <div class="text-lg text-gray-400">{{ currentTime() | date:'fullDate' }}</div>
+        </div>
+      }
+      @case ('stopwatch') {
+        <div class="text-center">
+          <div class="font-mono text-6xl">
+            {{ stopwatchTime() | date:'mm:ss':'UTC' }}.<span class="text-4xl">{{ (stopwatchTime() % 1000) | number:'3.0-0' }}</span>
+          </div>
+          <div class="flex gap-4 justify-center mt-6">
+            <button (click)="toggleStopwatch()" class="w-24 h-24 rounded-full text-lg font-semibold transition-colors" [class.bg-red-600]="isStopwatchRunning()" [class.hover:bg-red-500]="isStopwatchRunning()" [class.accent-bg]="!isStopwatchRunning()" [class.hover:opacity-90]="!isStopwatchRunning()">
+              {{ isStopwatchRunning() ? 'Stop' : 'Start' }}
+            </button>
+            <button (click)="resetStopwatch()" class="w-24 h-24 rounded-full bg-gray-700 hover:bg-gray-600 text-lg font-semibold transition-colors">
+              Reset
+            </button>
+          </div>
+        </div>
+      }
+      @case ('timer') {
+        <div class="text-center">
+          @if (isTimerRunning() || timerTime() < (timerInputHours() * 3600 + timerInputMinutes() * 60 + timerInputSeconds())) {
+            <div class="font-mono text-7xl">
+                {{ timerTime() * 1000 | date:'HH:mm:ss':'UTC' }}
+            </div>
+          } @else {
+            <div class="flex items-center justify-center gap-2 text-6xl font-mono">
+              <input type="number" min="0" max="23" [(ngModel)]="timerInputHours" (change)="setTimer()" class="timer-input">
+              <span>:</span>
+              <input type="number" min="0" max="59" [(ngModel)]="timerInputMinutes" (change)="setTimer()" class="timer-input">
+              <span>:</span>
+              <input type="number" min="0" max="59" [(ngModel)]="timerInputSeconds" (change)="setTimer()" class="timer-input">
+            </div>
+          }
+          <div class="flex gap-4 justify-center mt-6">
+            <button (click)="toggleTimer()" class="w-24 h-24 rounded-full text-lg font-semibold transition-colors" [class.bg-red-600]="isTimerRunning()" [class.hover:bg-red-500]="isTimerRunning()" [class.accent-bg]="!isTimerRunning()" [class.hover:opacity-90]="!isTimerRunning()">
+              {{ isTimerRunning() ? 'Pause' : 'Start' }}
+            </button>
+            <button (click)="resetTimer()" class="w-24 h-24 rounded-full bg-gray-700 hover:bg-gray-600 text-lg font-semibold transition-colors">
+              Reset
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

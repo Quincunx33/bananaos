@@ -1,0 +1,49 @@
+<div class="h-full flex flex-col bg-gray-900 text-gray-200 font-sans">
+  <header class="p-4 border-b border-gray-700/50 flex-shrink-0">
+    <h2 class="text-2xl font-bold">Top Headlines
+      @if (source()) {
+        <span class="text-gray-400 text-xl font-normal"> from {{ source() }}</span>
+      }
+    </h2>
+  </header>
+  
+  <main class="flex-1 overflow-y-auto p-6">
+    @switch (status()) {
+      @case('loading') {
+        <div class="h-full w-full flex items-center justify-center">
+          <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+        </div>
+      }
+      @case('error') {
+        <div class="h-full w-full flex flex-col items-center justify-center text-center p-4">
+          <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+          <h3 class="text-xl font-bold">Failed to Load News</h3>
+          <p class="text-gray-400">{{ errorMsg() }}</p>
+          <p class="text-xs text-gray-500 mt-2">Note: This feature uses a public RSS-to-JSON service which may be temporarily unavailable.</p>
+        </div>
+      }
+      @case('loaded') {
+        @if (articles().length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (article of articles(); track article.url) {
+              <a [href]="article.url" target="_blank" rel="noopener noreferrer" class="article-card block">
+                <img [src]="article.urlToImage || 'https://picsum.photos/seed/news/400/200'" [alt]="article.title" class="w-full h-40 object-cover rounded-t-lg bg-gray-700">
+                <div class="p-4 flex flex-col flex-grow">
+                  <p class="text-xs text-gray-400 mb-1">{{ article.source.name }} &bull; {{ article.publishedAt | date:'short' }}</p>
+                  <h3 class="font-bold text-lg leading-tight mb-2 flex-grow hover:text-blue-400">{{ article.title }}</h3>
+                  <p class="text-sm text-gray-300 leading-snug line-clamp-3">{{ article.description }}</p>
+                </div>
+              </a>
+            }
+          </div>
+        } @else {
+          <div class="h-full w-full flex flex-col items-center justify-center text-center p-4">
+            <i class="fas fa-newspaper text-4xl text-gray-500 mb-4"></i>
+            <h3 class="text-xl font-bold">No Articles Found</h3>
+            <p class="text-gray-400">Could not find any top headlines from the source.</p>
+          </div>
+        }
+      }
+    }
+  </main>
+</div>

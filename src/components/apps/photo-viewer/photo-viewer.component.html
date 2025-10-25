@@ -1,0 +1,63 @@
+<div class="h-full flex flex-col bg-gray-900 text-white">
+  <!-- Toolbar -->
+  <div class="flex-shrink-0 p-2 bg-gray-800/50 backdrop-blur-sm flex items-center justify-between gap-4 z-10">
+    <h3 class="font-semibold px-2 truncate">{{ fileName() }}</h3>
+    <div class="flex items-center gap-2">
+       <input type="file" #fileInput class="hidden" accept="image/*" (change)="openLocalFile($event)">
+       <button (click)="fileInput.click()" class="w-10 h-10 hover:bg-gray-700 rounded-full" title="Open Image">
+         <i class="fas fa-folder-open"></i>
+       </button>
+    </div>
+  </div>
+
+  <!-- Image Display Area -->
+  <div class="flex-1 flex items-center justify-center p-4 relative overflow-auto">
+    @if (imageSrc(); as src) {
+      <img [src]="src" [alt]="fileName()" 
+           class="max-h-full max-w-full object-contain rounded-lg transition-all duration-300"
+           [style.transform]="imageStyle().transform"
+           [style.filter]="imageStyle().filter">
+
+      <!-- Editing Toolbar -->
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-gray-900/70 backdrop-blur-sm p-2 rounded-lg flex items-center gap-2 shadow-lg">
+        <button (click)="rotate(-90)" class="w-10 h-10 hover:bg-gray-700 rounded-full" title="Rotate Left">
+          <i class="fas fa-rotate-left"></i>
+        </button>
+        <button (click)="rotate(90)" class="w-10 h-10 hover:bg-gray-700 rounded-full" title="Rotate Right">
+          <i class="fas fa-rotate-right"></i>
+        </button>
+        <div class="w-px h-6 bg-gray-600"></div>
+        <button (click)="flip('x')" class="w-10 h-10 hover:bg-gray-700 rounded-full" title="Flip Horizontal">
+          <i class="fas fa-arrows-left-right"></i>
+        </button>
+        <button (click)="flip('y')" class="w-10 h-10 hover:bg-gray-700 rounded-full" title="Flip Vertical">
+          <i class="fas fa-arrows-up-down"></i>
+        </button>
+        <div class="w-px h-6 bg-gray-600"></div>
+        <div class="flex items-center gap-1">
+          <button (click)="applyFilter('grayscale')" [class.accent-bg]="filter() === 'grayscale'" class="px-3 py-1.5 text-xs rounded-md hover:bg-gray-700" title="Grayscale">B&W</button>
+          <button (click)="applyFilter('sepia')" [class.accent-bg]="filter() === 'sepia'" class="px-3 py-1.5 text-xs rounded-md hover:bg-gray-700" title="Sepia">Sepia</button>
+          <button (click)="applyFilter('invert')" [class.accent-bg]="filter() === 'invert'" class="px-3 py-1.5 text-xs rounded-md hover:bg-gray-700" title="Invert">Invert</button>
+        </div>
+        <div class="w-px h-6 bg-gray-600"></div>
+        <button (click)="resetEdits()" class="w-10 h-10 hover:bg-gray-700 rounded-full text-red-400" title="Reset Edits">
+          <i class="fas fa-trash-arrow-up"></i>
+        </button>
+      </div>
+
+    } @else if(error(); as errorMsg) {
+       <div class="text-center text-red-400">
+        <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+        <p>{{ errorMsg }}</p>
+      </div>
+    } @else {
+      <div class="text-center text-gray-500 flex flex-col items-center justify-center">
+        <i class="fas fa-image text-6xl mb-4"></i>
+        <p class="mb-4">No image loaded.</p>
+        <button (click)="fileInput.click()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity text-sm">
+          <i class="fas fa-folder-open mr-2"></i>Open Image
+        </button>
+      </div>
+    }
+  </div>
+</div>

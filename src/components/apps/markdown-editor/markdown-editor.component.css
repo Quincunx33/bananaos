@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  @apply font-bold text-white border-b border-gray-700 pb-2 mb-4 mt-6;
+}
+
+.markdown-preview h1 { @apply text-3xl; }
+.markdown-preview h2 { @apply text-2xl; }
+.markdown-preview h3 { @apply text-xl; }
+.markdown-preview h4 { @apply text-lg; }
+
+.markdown-preview p {
+  @apply mb-4 leading-relaxed;
+}
+
+.markdown-preview a {
+  @apply accent-text hover:underline;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  @apply list-inside pl-4 mb-4;
+}
+
+.markdown-preview ul {
+  @apply list-disc;
+}
+
+.markdown-preview ol {
+  @apply list-decimal;
+}
+
+.markdown-preview li {
+  @apply mb-1;
+}
+
+.markdown-preview pre {
+  @apply bg-gray-900 p-4 rounded-lg mb-4 overflow-x-auto;
+}
+
+.markdown-preview code {
+  @apply font-mono text-sm;
+}
+
+.markdown-preview p > code {
+  @apply bg-gray-700 px-1.5 py-1 rounded text-pink-400;
+}
+
+.markdown-preview blockquote {
+  @apply border-l-4 accent-border pl-4 py-2 my-4 bg-gray-900/50 text-gray-400 italic;
+}
+
+.markdown-preview table {
+    @apply w-full border-collapse border border-gray-600 mb-4;
+}
+
+.markdown-preview th, .markdown-preview td {
+    @apply border border-gray-600 p-2;
+}
+
+.markdown-preview th {
+    @apply bg-gray-700 font-semibold;
+}
+
+.markdown-preview tr:nth-child(even) {
+    @apply bg-gray-800/50;
+}

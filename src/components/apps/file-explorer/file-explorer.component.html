@@ -1,0 +1,107 @@
+
+<div class="h-full flex flex-col bg-gray-800 text-gray-200">
+  <!-- Main Content -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- Left Pane: Files and Toolbar -->
+    <div class="flex-1 flex flex-col">
+      <!-- Toolbar -->
+      <div class="flex-shrink-0 p-2 bg-gray-900/30 flex items-center justify-between gap-2 border-b border-gray-700/50">
+        <div class="flex items-center gap-2">
+          <button (click)="goUp()" [disabled]="currentPath() === '/'" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-arrow-up"></i>
+          </button>
+          <div class="flex items-center text-sm bg-gray-900/50 px-2 py-1 rounded-md">
+            @for (crumb of breadcrumbs(); track crumb.path) {
+              <span (click)="navigateTo(crumb.path)" class="px-2 hover:bg-gray-700 rounded-md cursor-pointer">{{ crumb.name }}</span>
+              @if (!$last) {
+                <i class="fas fa-chevron-right text-xs text-gray-500 mx-1"></i>
+              }
+            }
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="createNewFolder()" class="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md transition-colors">
+              <i class="fas fa-folder-plus mr-2"></i>New Folder
+          </button>
+          <button (click)="createNewFile()" class="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md transition-colors">
+              <i class="fas fa-file-plus mr-2"></i>New File
+          </button>
+          <button (click)="triggerUpload()" class="px-3 py-1.5 text-sm accent-bg hover:opacity-90 rounded-md transition-colors">
+              <i class="fas fa-upload mr-2"></i>Upload
+          </button>
+        </div>
+      </div>
+      
+      <!-- File list -->
+      <div class="flex-1 p-4 overflow-y-auto" (click)="deselect()">
+        @if (contents().length > 0) {
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+            @for (node of contents(); track node.path) {
+              <div (click)="$event.stopPropagation(); selectNode(node)" 
+                   (dblclick)="handleDoubleClick(node)" 
+                   class="flex flex-col items-center p-2 rounded-lg cursor-pointer transition-colors select-none text-center"
+                   [class.bg-blue-500/30]="selectedNode()?.path === node.path"
+                   [class.hover:bg-gray-700/50]="selectedNode()?.path !== node.path">
+                <i class="text-4xl mb-2" [ngClass]="getIconForNode(node)"></i>
+                <span class="text-xs break-all">{{ node.name }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="h-full flex items-center justify-center text-gray-500">
+            <p>This folder is empty.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right Pane: Preview -->
+    <div class="w-72 flex-shrink-0 border-l border-gray-700/50 bg-gray-900/30 flex flex-col">
+      @if (selectedNode(); as node) {
+        <div class="flex-1 p-4 overflow-y-auto">
+          <div class="flex flex-col items-center text-center">
+            <i class="text-5xl mb-4" [ngClass]="getIconForNode(node)"></i>
+            <h3 class="text-lg font-bold break-all w-full">{{ node.name }}</h3>
+            <p class="text-xs text-gray-400 mb-4">{{ node.type === 'directory' ? 'Folder' : 'File' }}</p>
+          </div>
+          
+          <div class="mt-4 pt-4 border-t border-gray-700 space-y-2">
+            @switch (node.type) {
+              @case ('directory') {
+                <p class="text-sm text-gray-400">Contains {{ selectedDirectoryChildrenCount() }} items.</p>
+              }
+              @case ('file') {
+                @if (isSelectedImage()) {
+                  <img [src]="node.content" alt="Preview" class="w-full rounded-lg object-contain">
+                } @else if (isSelectedText()) {
+                  <div class="bg-gray-900/50 p-2 rounded-md max-h-48 overflow-auto">
+                    <pre class="text-xs text-gray-300 whitespace-pre-wrap break-all">{{ node.content }}</pre>
+                  </div>
+                } @else {
+                  <p class="text-sm text-gray-400">No preview available for this file type.</p>
+                }
+              }
+            }
+          </div>
+        </div>
+        <div class="flex-shrink-0 p-3 border-t border-gray-700 flex gap-2">
+          <button (click)="renameSelectedNode()" class="flex-1 px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md transition-colors">
+            <i class="fas fa-pencil-alt mr-2"></i>Rename
+          </button>
+          <button (click)="deleteSelectedNode()" class="flex-1 px-3 py-1.5 text-sm bg-red-800/70 hover:bg-red-700 text-red-300 hover:text-red-200 rounded-md transition-colors">
+            <i class="fas fa-trash-alt mr-2"></i>Delete
+          </button>
+        </div>
+      } @else {
+        <div class="h-full flex items-center justify-center text-gray-500 text-center p-4">
+          <div>
+            <i class="fas fa-info-circle text-3xl mb-2"></i>
+            <p>Select a file to see details and a preview.</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <input type="file" #fileUploadInput class="hidden" (change)="handleFileUpload($event)">
+</div>

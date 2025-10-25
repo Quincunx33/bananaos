@@ -1,0 +1,49 @@
+<div class="h-full flex flex-col bg-gray-800 text-white">
+  <div class="flex-shrink-0 p-2 bg-gray-900/50 flex items-center justify-between gap-4 flex-wrap">
+    <!-- Tools -->
+    <div class="flex items-center gap-2 border-r border-gray-700 pr-3">
+      <button (click)="setTool('brush')" class="paint-control" [class.active]="tool() === 'brush'" title="Brush">
+        <i class="fas fa-paint-brush"></i>
+      </button>
+      <button (click)="setTool('eraser')" class="paint-control" [class.active]="tool() === 'eraser'" title="Eraser">
+        <i class="fas fa-eraser"></i>
+      </button>
+    </div>
+
+    <!-- Colors -->
+    <div class="flex items-center gap-2 border-r border-gray-700 pr-3">
+      @for (c of colors; track c) {
+        <button (click)="setColor(c)" 
+                [style.background-color]="c" 
+                class="w-8 h-8 rounded-full border-2 border-gray-600 transition-all"
+                [class.ring-2]="color() === c && tool() === 'brush'"
+                [class.ring-white]="color() === c && tool() === 'brush'"
+                [class.ring-offset-2]="color() === c && tool() === 'brush'"
+                [class.ring-offset-gray-900]="color() === c && tool() === 'brush'">
+        </button>
+      }
+      <input #colorPicker type="color" [value]="color()" (input)="selectCustomColor($event)" class="custom-color-picker" title="Custom Color">
+    </div>
+
+    <!-- Brush Size -->
+    <div class="flex items-center gap-3 flex-grow">
+      <i class="fas fa-circle text-xs"></i>
+      <input type="range" min="1" max="50" [value]="brushSize()" (input)="setBrushSize($any($event.target).value)" class="w-24 accent-bg">
+      <i class="fas fa-circle text-2xl"></i>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2">
+      <button (click)="saveCanvas()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-sm font-semibold">
+        <i class="fas fa-save mr-1"></i> Save
+      </button>
+      <button (click)="clearCanvas()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded text-sm font-semibold">
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <div class="flex-1 bg-white relative overflow-hidden">
+    <canvas #canvas class="absolute top-0 left-0"></canvas>
+  </div>
+</div>

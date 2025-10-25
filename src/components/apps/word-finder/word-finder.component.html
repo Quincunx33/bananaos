@@ -1,0 +1,36 @@
+<div class="h-full w-full flex bg-gray-800 text-white p-4 font-sans select-none">
+  <!-- Letter Grid -->
+  <div class="flex-1 flex items-center justify-center">
+    <div class="grid gap-1" [style.grid-template-columns]="'repeat(' + gridSize + ', 1fr)'">
+      @for (row of grid(); track $index; let r = $index) {
+        @for (cell of row; track $index; let c = $index) {
+          <div class="word-cell"
+               [class.selected]="cell.isSelected"
+               (mousedown)="startSelection(r, c)"
+               (mouseover)="updateSelection(r, c)"
+               (mouseup)="endSelection()">
+            {{ cell.letter }}
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Words List -->
+  <div class="w-56 flex-shrink-0 bg-gray-900/50 p-4 rounded-lg ml-4">
+    <h2 class="text-xl font-bold mb-4">Find Words</h2>
+    <ul class="space-y-2">
+      @for (word of wordsToFind; track word) {
+        <li class="text-lg transition-colors" [class.found]="isWordFound(word)">
+          {{ word }}
+        </li>
+      }
+    </ul>
+    @if (isGameWon()) {
+      <div class="mt-6 text-center">
+        <p class="text-green-400 font-bold">You found them all!</p>
+        <button (click)="newGame()" class="mt-2 px-3 py-1 bg-blue-600 rounded-md">New Game</button>
+      </div>
+    }
+  </div>
+</div>

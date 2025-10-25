@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.book-cover {
+    @apply w-36 h-56 bg-gray-700 rounded-md shadow-lg transform-gpu transition-transform duration-300;
+    transform-style: preserve-3d;
+}
+
+.book-cover:hover {
+    transform: rotateY(-10deg) scale(1.05);
+}
+
+.book-cover img {
+    @apply rounded-md;
+}

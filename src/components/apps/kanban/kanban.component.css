@@ -1,0 +1,19 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .kanban-column {
+    @apply w-72 bg-gray-800 rounded-lg flex flex-col flex-shrink-0 h-full transition-colors;
+  }
+  .kanban-card {
+    @apply bg-gray-700 p-3 rounded-md shadow-md cursor-grab active:cursor-grabbing;
+  }
+  .add-task-btn {
+    @apply w-full text-left p-2 text-gray-400 hover:bg-gray-700/80 rounded-b-lg transition-colors;
+  }
+  .kanban-column.drag-over {
+    @apply bg-gray-700/70;
+  }
+}

@@ -1,0 +1,27 @@
+<div #headerEl 
+     [class.bg-gray-700/80]="isActive()"
+     [class.bg-gray-900/50]="!isActive()"
+     class="flex-shrink-0 h-10 px-3 py-2 flex justify-between items-center cursor-move backdrop-blur-md border-b border-gray-700/50 transition-colors">
+  <div class="flex items-center gap-2">
+    <i class="app-icon text-lg" [ngClass]="window().icon"></i>
+    <span class="app-title font-medium text-gray-200">{{ window().title }}</span>
+  </div>
+  <div class="flex space-x-2">
+    <button (click)="minimize.emit()" title="Minimize" class="w-7 h-7 flex items-center justify-center hover:bg-gray-600 rounded-full transition-colors">
+      <i class="fas fa-minus text-xs"></i>
+    </button>
+    <button (click)="maximize.emit()" title="Maximize" class="w-7 h-7 flex items-center justify-center hover:bg-gray-600 rounded-full transition-colors">
+      @if (window().state === 'maximized') {
+        <i class="far fa-window-restore text-xs"></i>
+      } @else {
+        <i class="far fa-square text-xs"></i>
+      }
+    </button>
+    <button (click)="close.emit()" title="Close" class="w-7 h-7 flex items-center justify-center hover:bg-red-600 rounded-full transition-colors">
+      <i class="fas fa-times text-sm"></i>
+    </button>
+  </div>
+</div>
+<div class="app-content flex-1 h-full overflow-auto">
+  <ng-container [ngComponentOutlet]="window().component" [ngComponentOutletInjector]="window().injector"></ng-container>
+</div>
