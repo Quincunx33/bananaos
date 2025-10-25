@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { ApiKeyService } from '../../../services/api-key.service';
 
 @Component({

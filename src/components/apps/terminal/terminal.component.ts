@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, signal, inject, DestroyRef, effect } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { NotificationService } from '../../../services/notification.service';
 import { OsInteractionService } from '../../../services/os-interaction.service';
 import { ApiKeyService } from '../../../services/api-key.service';
