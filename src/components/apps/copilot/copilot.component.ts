@@ -45,7 +45,7 @@ export class CopilotComponent implements AfterViewChecked {
      effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI(apiKey);
+        this.ai = new GoogleGenerativeAI({ apiKey });
         this.error.set(null);
       } else {
         this.ai = null;
@@ -132,10 +132,11 @@ Use this if the user's request is a question or doesn't match a command.
 
   private async callGemini(prompt: string): Promise<string> {
     if (!this.ai) throw new Error("AI not initialized");
-    const model = this.ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text().trim();
+    const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt
+    });
+    return response.text.trim();
   }
 
   private async processAiResponse(responseText: string) {

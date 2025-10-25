@@ -37,7 +37,7 @@ export class BananaIdeComponent {
     effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI(apiKey);
+        this.ai = new GoogleGenerativeAI({ apiKey });
       } else {
         this.ai = null;
       }
@@ -126,10 +126,11 @@ export class BananaIdeComponent {
     try {
       const prompt = `Generate a single code block of ${this.language()} based on the following request. Only output the raw code, with no explanation or markdown formatting.\n\nRequest: "${this.aiPrompt()}"`;
       
-      const model = this.ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let generatedCode = response.text();
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
+      let generatedCode = response.text;
       
       // Clean up markdown code block fences if they exist
       generatedCode = generatedCode.replace(/^```(?:\w+\n)?/, '').replace(/```$/, '').trim();

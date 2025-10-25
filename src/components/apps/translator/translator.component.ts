@@ -29,7 +29,7 @@ export class TranslatorComponent {
     effect(() => {
       const apiKey = this.apiKeyService.apiKey();
       if (apiKey) {
-        this.ai = new GoogleGenerativeAI(apiKey);
+        this.ai = new GoogleGenerativeAI({ apiKey });
         this.error.set(null);
       } else {
         this.ai = null;
@@ -61,11 +61,12 @@ export class TranslatorComponent {
     try {
       const prompt = `Translate the following text from ${this.sourceLang()} to ${this.targetLang()}. Only return the translated text, without any additional explanation or introduction.\n\nText: "${this.inputText()}"`;
       
-      const model = this.ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt
+      });
 
-      this.translatedText.set(response.text().trim());
+      this.translatedText.set(response.text.trim());
 
     } catch (e) {
       console.error(e);
