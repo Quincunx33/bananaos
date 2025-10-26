@@ -3,7 +3,7 @@ name: Deploy Banana OS to GitHub Pages
 on:
   push:
     branches:
-      - main  # আপনার প্রধান শাখা যদি 'master' হয়, তবে পরিবর্তন করুন
+      - main 
 
 # একই সাথে একাধিক কাজ চালানো এড়াতে
 concurrency:
@@ -14,7 +14,6 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     
-    # ডিপ্লয় করার জন্য প্রয়োজনীয় অনুমতি
     permissions:
       contents: read
       pages: write
@@ -30,13 +29,11 @@ jobs:
           node-version: '20'
 
       - name: 💾 Install Dependencies
-        # 'npm ci' এরর এড়াতে 'npm install' ব্যবহার করা হলো।
         run: npm install
 
-      - name: 🏗️ Build Angular Application (Fixed Base HREF)
-        # ⚠️ FIX: এখানে --base-href=/Bananaos/ যোগ করা হলো। 
-        # এটি index.html-এর <base href="/"> কে ওভাররাইড করে।
-        run: npm run build -- --base-href=/Bananaos/ 
+      - name: 🏗️ Build Angular Application (Base HREF now in index.html)
+        # ⚠️ ফিক্স: --base-href আর্গুমেন্টটি মুছে ফেলা হলো
+        run: npm run build 
         env:
           NODE_OPTIONS: --max_old_space_size=8192 
 
