@@ -3,9 +3,9 @@ name: Deploy Banana OS to GitHub Pages
 on:
   push:
     branches:
-      - main  # Change this if your main branch is 'master' instead of 'main'
+      - main  # আপনার প্রধান শাখা যদি 'master' হয়, তবে 'main'-এর বদলে 'master' লিখবেন
 
-# To prevent multiple concurrent runs (concurrency)
+# একই সাথে একাধিক কাজ চালানো এড়াতে
 concurrency:
   cancel-in-progress: true
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,7 +14,7 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     
-    # Setting permissions so the action can write to GitHub Pages
+    # ডিপ্লয় করার জন্য প্রয়োজনীয় অনুমতি
     permissions:
       contents: read
       pages: write
@@ -27,31 +27,30 @@ jobs:
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Compatible with the Node version in your package.json
+          node-version: '20'
 
-      - name: 💾 Install Dependencies
-        # Using npm ci is better as it installs dependencies according to package-lock.json.
-        run: npm ci
+      - name: 💾 Install Dependencies (Fixed)
+        # ⚠️ ফিক্স: 'npm ci' এরর আসছিল, তাই 'npm install' ব্যবহার করা হলো।
+        run: npm install
 
       - name: 🏗️ Build Angular Application
-        # The build command. This ensures the correct base path is used for GitHub Pages.
-        # Based on the note in your index.html, the base path is '/Bananaos/'.
+        # GitHub Pages-এর জন্য সঠিক বেস পাথ '/Bananaos/' সেট করা হলো।
         run: npm run build -- --base-href=/Bananaos/ 
         env:
-          # Increasing memory for large Angular projects
+          # বড় অ্যাঙ্গুলার প্রজেক্টের জন্য মেমরি বাড়ানো
           NODE_OPTIONS: --max_old_space_size=8192 
 
       - name: 📁 Configure Pages for SPA (Single Page Application)
-        # Creating 404.html to fix routing for Single Page Applications.
+        # SPA রাউটিং ঠিক রাখতে 404.html তৈরি করা হলো।
         run: cp dist/index.html dist/404.html
 
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # The output path is './dist' according to your angular.json file.
+          # আউটপুট ফোল্ডার
           publish_dir: ./dist
-          # To clear Git History after the build (this is optional, but good practice)
+          # Git History পরিষ্কার রাখতে
           force_orphan: true
-          # Use this if you don't have a custom domain, remove it if you do
           cname: 
+
