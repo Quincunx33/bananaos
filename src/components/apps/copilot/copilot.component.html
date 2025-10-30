@@ -1,49 +1,126 @@
 
-<div class="h-full flex flex-col bg-gray-800 text-gray-200">
-  <header class="flex-shrink-0 p-3 bg-gray-900/50 backdrop-blur-sm flex items-center gap-3 border-b border-gray-700/50">
-    <i class="fas fa-robot text-2xl text-cyan-400"></i>
-    <div>
-      <h2 class="font-bold text-lg">Banana Copilot</h2>
-      <p class="text-xs text-gray-400">Your AI Assistant</p>
-    </div>
-  </header>
-
-  <div #chatContainer class="flex-1 p-4 space-y-4 overflow-y-auto">
-    @for(message of chatHistory(); track $index) {
-      <div class="flex" [class.justify-end]="message.sender === 'user'">
-        @if (message.sender === 'bot') {
-          <div class="chat-bubble bot-bubble">
-            @if (message.isThinking) {
-              <div class="thinking-dots">
-                <span></span><span></span><span></span>
-              </div>
-            } @else {
-              <span>{{ message.text }}</span>
-            }
-          </div>
-        } @else {
-          <div class="chat-bubble user-bubble">
-            <span>{{ message.text }}</span>
+<div class="h-full flex bg-gray-800 text-gray-200">
+  <!-- Sidebar for Chat History -->
+  @if (isSidebarOpen()) {
+    <div class="w-64 flex-shrink-0 bg-gray-900/50 flex flex-col border-r border-gray-700/50">
+      <div class="p-2 flex-shrink-0 border-b border-gray-700/50 flex items-center justify-between">
+        <h2 class="text-lg font-bold px-2">History</h2>
+        <button (click)="newChat()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-700 rounded-md" title="New Chat">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto">
+        @for (session of chatSessions(); track session.id) {
+          <div (click)="selectChat(session.id)" 
+               class="p-3 cursor-pointer border-l-4 group flex justify-between items-center"
+               [class.bg-gray-700/50]="activeSessionId() === session.id"
+               [class.accent-border]="activeSessionId() === session.id"
+               [class.border-transparent]="activeSessionId() !== session.id"
+               [class.hover:bg-gray-700/30]="activeSessionId() !== session.id">
+            <h3 class="font-semibold truncate text-sm flex-1">{{ session.title }}</h3>
+            <button (click)="deleteChat(session.id, $event)" class="w-6 h-6 flex-shrink-0 flex items-center justify-center hover:bg-red-500/50 rounded-md text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Chat">
+              <i class="fas fa-trash text-xs"></i>
+            </button>
           </div>
         }
       </div>
-    }
-  </div>
-
-  <footer class="flex-shrink-0 p-3 border-t border-gray-700/50">
-    @if(error(); as errorMsg) {
-      <p class="text-red-400 text-xs mb-2 text-center">{{ errorMsg }}</p>
-    }
-    <div class="flex items-center gap-3">
-      <input type="text" 
-             placeholder="Ask me to do something..."
-             [(ngModel)]="userInput"
-             (keyup.enter)="sendMessage()"
-             [disabled]="isLoading()"
-             class="flex-1 bg-gray-700 border border-gray-600 rounded-full px-4 py-2 focus:outline-none focus:ring-2 accent-ring-focus disabled:opacity-50">
-      <button (click)="sendMessage()" [disabled]="isLoading() || !userInput().trim()" class="w-10 h-10 flex-shrink-0 accent-bg text-white rounded-full flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-wait">
-        <i class="fas fa-paper-plane"></i>
-      </button>
     </div>
-  </footer>
+  }
+
+  <!-- Main Chat Area -->
+  <div class="h-full flex flex-col text-gray-200 relative flex-1">
+    <header class="flex-shrink-0 p-3 bg-gray-900/50 backdrop-blur-sm flex items-center justify-between gap-3 border-b border-gray-700/50">
+      <div class="flex items-center gap-3">
+        <button (click)="isSidebarOpen.set(!isSidebarOpen())" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors" title="Toggle History">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <h2 class="font-bold text-lg">Banana Copilot</h2>
+          <p class="text-xs text-gray-400">Your AI Assistant</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <!-- Settings Menu -->
+        <div class="relative">
+          <button (click)="isSettingsOpen.set(!isSettingsOpen())" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors" title="Settings">
+            <i class="fas fa-cog"></i>
+          </button>
+          @if (isSettingsOpen()) {
+            <div (click)="isSettingsOpen.set(false)" class="fixed inset-0 z-40"></div>
+            <div class="absolute right-0 mt-2 w-56 origin-top-right bg-gray-800 border border-gray-700 rounded-md shadow-lg z-50 animate-fade-in-fast">
+              <div class="py-1">
+                <div class="px-3 py-1 text-xs text-gray-400 font-semibold uppercase">AI Provider</div>
+                @for (provider of providers(); track provider.id) {
+                  <button (click)="selectProvider(provider.id)" 
+                          [disabled]="!provider.available"
+                          class="w-full text-left px-3 py-2 text-sm flex items-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          [class.hover:bg-gray-700]="provider.available"
+                          [class.text-gray-500]="!provider.available">
+                    <i class="w-4 fas" [class.fa-check]="selectedProvider() === provider.id"></i>
+                    <span>{{ provider.name }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <div #chatContainer class="flex-1 p-4 space-y-4 overflow-y-auto">
+      @for(message of chatHistory(); track $index) {
+        <div class="flex" [class.justify-end]="message.sender === 'user'">
+          @if (message.sender === 'bot') {
+            <div class="chat-bubble bot-bubble">
+              @if (message.isThinking) {
+                <div class="thinking-dots"><span></span><span></span><span></span></div>
+              } @else {
+                <span>{{ message.text }}</span>
+              }
+            </div>
+          } @else {
+            <div class="chat-bubble user-bubble">
+              @if(message.imageUrl) {
+                <img [src]="message.imageUrl" alt="User upload" class="attached-image">
+              }
+              @if(message.text) {
+                <span>{{ message.text }}</span>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <footer class="flex-shrink-0 p-3 border-t border-gray-700/50">
+      @if(error(); as errorMsg) {
+        <p class="text-red-400 text-xs mb-2 text-center">{{ errorMsg }}</p>
+      }
+      @if(pendingImage(); as imgSrc) {
+          <div class="relative w-20 h-20 mb-2 p-1 border border-gray-600 rounded-md">
+              <img [src]="imgSrc" class="w-full h-full object-cover rounded-sm">
+              <button (click)="pendingImage.set(null)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full text-white flex items-center justify-center text-xs">&times;</button>
+          </div>
+      }
+      <div class="flex items-center gap-2">
+        <input #imageInput type="file" class="hidden" accept="image/*" (change)="handleImageUpload($event)">
+        <button (click)="triggerImageUpload()" class="control-btn" title="Attach Image">
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <button (click)="toggleRecording()" class="control-btn" [class.recording]="isRecording()" title="Voice Input">
+          <i class="fas fa-microphone"></i>
+        </button>
+
+        <input type="text" 
+               placeholder="Ask me to do something..."
+               [(ngModel)]="userInput"
+               (keyup.enter)="sendMessage()"
+               [disabled]="isLoading()"
+               class="flex-1 bg-gray-700 border border-gray-600 rounded-full px-4 py-2 focus:outline-none focus:ring-2 accent-ring-focus disabled:opacity-50">
+        <button (click)="sendMessage()" [disabled]="isLoading() || (!userInput().trim() && !pendingImage())" class="w-10 h-10 flex-shrink-0 accent-bg text-white rounded-full flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-wait">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </footer>
+  </div>
 </div>

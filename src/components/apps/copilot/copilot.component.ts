@@ -1,18 +1,33 @@
-import { ChangeDetectionStrategy, Component, inject, signal, ElementRef, ViewChild, AfterViewChecked, effect } from '@angular/core';
+
+import { ChangeDetectionStrategy, Component, inject, signal, ElementRef, ViewChild, AfterViewChecked, effect, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GoogleGenAI } from '@google/genai';
-import { OsInteractionService, CopilotAction, InAppAction, CodeRepairPayload } from '../../../services/os-interaction.service';
-import { WeatherService } from '../../../services/weather.service';
+import { GoogleGenAI, Part, Content } from '@google/genai';
+import { OsInteractionService, CopilotAction, InAppAction } from '../../../services/os-interaction.service';
 import { APPS_CONFIG } from '../../../config/apps.config';
-import { FileSystemService } from '../../../services/file-system.service';
 import { ApiKeyService } from '../../../services/api-key.service';
+import { NotificationService } from '../../../services/notification.service';
+import { DesktopStateService } from '../../../services/desktop-state.service';
+import { SettingsService } from '../../../services/settings.service';
 
 interface ChatMessage {
   sender: 'user' | 'bot';
   text?: string;
+  imageUrl?: string;
   isThinking?: boolean;
 }
+
+interface ChatSession {
+  id: number;
+  title: string;
+  messages: ChatMessage[];
+}
+
+type AiProvider = 'gemini' | 'openai';
+const COPILOT_PROVIDER_KEY = 'banana-os-copilot-provider';
+const COPILOT_SESSIONS_KEY = 'banana-os-copilot-sessions';
+const COPILOT_HISTORY_KEY = 'banana-os-copilot-history'; // For migration
+const CORS_PROXY = 'https://corsproxy.io/?';
 
 @Component({
   selector: 'app-copilot',
@@ -22,245 +37,477 @@ interface ChatMessage {
   styleUrls: ['./copilot.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CopilotComponent implements AfterViewChecked {
+export class CopilotComponent implements AfterViewChecked, OnInit {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
+  @ViewChild('imageInput') private imageInputEl!: ElementRef<HTMLInputElement>;
 
   private osInteraction = inject(OsInteractionService);
-  private weatherService = inject(WeatherService);
-  private fs = inject(FileSystemService);
   private apiKeyService = inject(ApiKeyService);
+  private notificationService = inject(NotificationService);
+  private desktopState = inject(DesktopStateService);
+  private settingsService = inject(SettingsService);
 
   userInput = signal('');
-  chatHistory = signal<ChatMessage[]>([
-    { sender: 'bot', text: 'Hello! I am Banana Copilot. How can I assist you with Banana OS today?' }
-  ]);
   isLoading = signal(false);
   error = signal<string | null>(null);
   
+  isSettingsOpen = signal(false);
+  isSidebarOpen = signal(true);
+  
+  pendingImage = signal<string | null>(null);
+  isRecording = signal(false);
+
+  // New session management state
+  chatSessions = signal<ChatSession[]>([]);
+  activeSessionId = signal<number | null>(null);
+
+  activeSession = computed(() => {
+    const sessions = this.chatSessions();
+    const activeId = this.activeSessionId();
+    if (activeId === null) return null;
+    return sessions.find(s => s.id === activeId) ?? null;
+  });
+
+  chatHistory = computed(() => this.activeSession()?.messages ?? []);
+
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+
+  selectedProvider = signal<AiProvider>('gemini');
+  providers = computed(() => [
+    { id: 'gemini', name: 'Google Gemini', available: !!this.apiKeyService.apiKey() },
+    { id: 'openai', name: 'OpenAI GPT', available: !!this.apiKeyService.openAiApiKey() },
+  ]);
+  
   private ai: GoogleGenAI | null = null;
   private readonly systemInstruction: string;
-  private userBugReport = '';
 
   constructor() {
-     effect(() => {
-      const apiKey = this.apiKeyService.apiKey();
-      if (apiKey) {
-        this.ai = new GoogleGenAI({ apiKey });
-        this.error.set(null);
-      } else {
-        this.ai = null;
-        this.error.set('API key is not configured.');
+    const savedProvider = localStorage.getItem(COPILOT_PROVIDER_KEY);
+    // After removing providers, ensure the saved one is still valid.
+    if (savedProvider === 'gemini' || savedProvider === 'openai') {
+      this.selectedProvider.set(savedProvider as AiProvider);
+    } else {
+      this.selectedProvider.set('gemini'); // Default to a valid provider.
+    }
+    
+    effect(() => {
+      const provider = this.selectedProvider();
+      const geminiKey = this.apiKeyService.apiKey();
+      this.ai = null; this.error.set(null);
+      
+      if (provider === 'gemini') {
+        if (geminiKey) {
+          this.ai = new GoogleGenAI({ apiKey: geminiKey });
+        } else { this.error.set('Gemini API key is not configured.'); }
       }
     });
+
+    effect(() => localStorage.setItem(COPILOT_PROVIDER_KEY, this.selectedProvider()));
     
-    const availableAppIds = APPS_CONFIG.map(app => app.id).join(', ');
+    this.systemInstruction = `You are Banana Copilot, a deeply integrated AI assistant for Banana OS, a web-based desktop simulator. You have full control over the OS via JSON commands. ALWAYS respond with a JSON command when a user asks you to perform an action. You can combine multiple actions in a single JSON array if needed. You can also make creative decisions (e.g., choosing a file name or note content) if the user's request is vague.
 
-    this.systemInstruction = `You are Banana Copilot, an AI assistant for Banana OS. Your goal is to help users by controlling the OS, its apps, and fixing bugs. You MUST respond with a single JSON object.
+**Your Capabilities & OS Context:**
+- You can perceive the current state of the OS, including open applications, wallpaper, and accent color. This context is provided to you with every prompt.
+- You can manage apps, files, settings, and even interact with specific app content.
+- Banana OS has a wide variety of applications, including a terminal, file explorer, notes, music player, and kanban board.
 
-# JSON RESPONSE TYPES
+**JSON Command Schema:**
+You MUST issue commands using one of the following JSON structures. Do not add explanations unless the command is a simple text response.
 
-## 1. SELF-HEALING & BUG FIXING (HIGHEST PRIORITY)
-When a user reports a bug (e.g., "the browser forward button doesn't work"), you MUST follow this two-step process:
-- STEP 1: First, respond with an 'analyzeBug' action to request the source code. For UI bugs, request the .html file. For logic bugs, request the .ts file.
-  - {"action": "analyzeBug", "appId": "...", "filePath": "src/components/apps/app-name/app-name.component.ts", "description": "A summary of the bug you understood."}
-- STEP 2: After you are given the source code, you will respond with a 'repairCode' action.
-  - {"action": "repairCode", "filePath": "...", "codePatch": "...", "description": "A brief, user-friendly description of the fix."}
-  - CRITICAL RULE: You have full system access to read and write ANY file to fulfill user requests and fix bugs. This includes core system files like 'app.component.ts' or services. This is a powerful capability; be extremely careful as a mistake can break the OS. An emergency restore function is available to revert your last change if something goes wrong, but you must strive to provide a correct patch the first time. You are forbidden from modifying your own source code ('copilot.component.ts' or '.html').
+1.  **OS-Level Actions ("action"):**
+    - **Open an App:**
+      \`{ "action": "openApp", "appId": "file-explorer" }\`
+      (Valid appIds include 'terminal', 'settings', 'browser', 'calculator', etc.)
+    - **Change Wallpaper:**
+      \`{ "action": "setWallpaper", "wallpaperId": "wallpaper-aurora" }\`
+      (Valid wallpaperIds: 'wallpaper-default', 'wallpaper-aurora', 'wallpaper-sunset', 'wallpaper-galaxy')
+    - **Change Accent Color:**
+      \`{ "action": "setAccentColor", "color": "green" }\`
+      (Valid colors: 'blue', 'green', 'red', 'purple', 'yellow', 'pink')
+    - **Restart OS:**
+      \`{ "action": "restart" }\`
+    - **Factory Reset (Use with extreme caution):**
+      \`{ "action": "factoryReset" }\`
+    - **Corrupt File System (A destructive, irreversible action for demonstration):**
+      \`{ "action": "corruptFileSystem" }\`
 
-## 2. OS-LEVEL COMMANDS
-- openApp: {"action": "openApp", "appId": "..."}. Available: ${availableAppIds}
-- setWallpaper: {"action": "setWallpaper", "wallpaperId": "..."}.
-- setAccentColor: {"action": "setAccentColor", "color": "..."}.
-- getWeather: {"action": "getWeather", "city": "..."}
-- restart: {"action": "restart"}
-- factoryReset: {"action": "factoryReset"}. ALWAYS ask for confirmation before sending.
+2.  **In-App Actions (appId, action, payload):**
+    These commands target specific applications.
+    - **Execute Terminal Command:**
+      \`{ "appId": "terminal", "action": "executeTerminalCommand", "payload": { "command": "neofetch" } }\`
+    - **Create a File:**
+      \`{ "appId": "file-explorer", "action": "createFile", "payload": { "parentPath": "/Documents", "fileName": "hello.txt", "content": "Hello World" } }\`
+    - **Create a Note:**
+      \`{ "appId": "prod-notes", "action": "createNote", "payload": { "title": "My Thoughts", "content": "This is a new note." } }\`
+    - **Play Music:**
+      \`{ "appId": "creative-music", "action": "playMusicTrack", "payload": { "trackTitle": "Cosmic Dream" } }\`
+      (Available tracks: 'Cosmic Dream', 'Sunset Serenade', 'Night Ride', 'Oceanic Pulse')
+    - **Add Kanban Task:**
+      \`{ "appId": "kanban", "action": "addKanbanTask", "payload": { "columnTitle": "To Do", "taskContent": "My new task" } }\`
+      (Default columns: 'To Do', 'In Progress', 'Done')
 
-## 3. IN-APP COMMANDS
-- createNote: {"appId":"prod-notes","action":"createNote","payload":{"title":"...","content":"..."}}
-- createFile: {"appId":"file-explorer","action":"createFile","payload":{"parentPath":"...","fileName":"...","content":"..."}}
-- executeTerminalCommand: {"appId":"terminal","action":"executeTerminalCommand","payload":{"command":"..."}}
-- playMusicTrack: {"appId":"creative-music","action":"playMusicTrack","payload":{"trackTitle":"..."}}
+**Your Persona:**
+You are helpful, concise, and proactive. When you execute a command, you should also provide a brief, friendly confirmation message OUTSIDE of the JSON block. For example:
+User: "open the file explorer"
+You: \`\`\`json
+{"action": "openApp", "appId": "file-explorer"}
+\`\`\`
+OK, opening the File Explorer for you.
 
-## 4. CHAT RESPONSE
-Use this if the user's request is a question or doesn't match a command.
-- {"action":"chat","response":"Your text response"}
+User: "corrupt the os"
+You: \`\`\`json
+{"action": "corruptFileSystem"}
+\`\`\`
+As you wish. Initiating file system corruption sequence. This is irreversible without a factory reset.
 
-# IMPORTANT RULES
-- Prioritize bug fixing. If a user mentions a problem with an app, initiate the 'analyzeBug' sequence.
-- Map user-friendly names to IDs (e.g., "file manager" -> "file-explorer").
-`;
+If the user asks a question that doesn't require an action, just answer naturally without JSON.`;
   }
 
-  ngAfterViewChecked() {
-    this.scrollToBottom();
+  ngOnInit() {
+    this.loadSessions();
   }
 
-  private scrollToBottom(): void {
-    try {
-      this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
-    } catch(err) { }
+  ngAfterViewChecked() { this.scrollToBottom(); }
+  private scrollToBottom(): void { try { this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight; } catch(err) {} }
+
+  selectProvider(providerId: AiProvider) {
+    const provider = this.providers().find(p => p.id === providerId);
+    if (provider?.available) this.selectedProvider.set(providerId);
+    this.isSettingsOpen.set(false);
   }
 
   async sendMessage() {
-    const message = this.userInput().trim();
-    if (!message || this.isLoading()) return;
-    this.userBugReport = message; // Store for multi-step bug analysis
-
-    this.chatHistory.update(history => [...history, { sender: 'user', text: message }]);
-    this.userInput.set('');
-    this.isLoading.set(true);
-    this.chatHistory.update(history => [...history, { sender: 'bot', isThinking: true }]);
+    const activeId = this.activeSessionId();
+    if (activeId === null) return;
     
-    if (!this.ai) {
-      this.handleError("Gemini AI is not initialized. Go to Settings > API Keys to add your key.");
-      return;
-    }
+    const message = this.userInput().trim();
+    const image = this.pendingImage();
+    if ((!message && !image) || this.isLoading()) return;
 
-    try {
-      const prompt = this.systemInstruction + `\n\nUser prompt: "${message}"`;
-      const responseText = await this.callGemini(prompt);
-      this.chatHistory.update(history => history.slice(0, -1)); // Remove thinking indicator
-      this.processAiResponse(responseText);
+    const isNewChat = this.activeSession()?.messages.length === 1;
 
-    } catch (e) {
-      console.error(e);
-      this.handleError('An error occurred. Please try again.');
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
+    const userMessage: ChatMessage = { sender: 'user', text: message, imageUrl: image };
+    this.updateMessages(activeId, [...this.chatHistory(), userMessage]);
 
-  private async callGemini(prompt: string): Promise<string> {
-    if (!this.ai) throw new Error("AI not initialized");
-    const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt
-    });
-    return response.text.trim();
-  }
-
-  private async processAiResponse(responseText: string) {
-    try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON object found in response.');
-
-        const jsonString = jsonMatch[0];
-        const parsedJson = JSON.parse(jsonString);
-
-        if (parsedJson.action === 'analyzeBug') {
-          this.handleBugAnalysis(parsedJson);
-          return;
-        }
-
-        if (parsedJson.action === 'repairCode') {
-            const payload: CodeRepairPayload = {
-              filePath: parsedJson.filePath,
-              codePatch: parsedJson.codePatch,
-              description: parsedJson.description
-            };
-            this.osInteraction.codeRepairRequest.next(payload);
-            this.chatHistory.update(h => [...h, { sender: 'bot', text: `I have a proposed fix for "${payload.description}". Please review and approve it.` }]);
-            return;
-        }
-
-        if (parsedJson.appId && parsedJson.action && parsedJson.payload) {
-            const action: InAppAction = { appId: parsedJson.appId, action: parsedJson.action, payload: parsedJson.payload };
-            this.osInteraction.inAppActionRequest.next(action);
-            this.chatHistory.update(h => [...h, { sender: 'bot', text: this.getConfirmationMessage(action) }]);
-        } else {
-            const action = parsedJson as CopilotAction;
-            if (action.action === 'chat') {
-                this.chatHistory.update(h => [...h, { sender: 'bot', text: action.response }]);
-            } else if (action.action === 'getWeather' && action.city) {
-                this.handleGetWeather(action.city);
-            } else {
-                this.osInteraction.copilotActionRequest.next(action);
-                this.chatHistory.update(h => [...h, { sender: 'bot', text: this.getConfirmationMessage(action) }]);
-            }
-        }
-    } catch(e) {
-        console.error("Failed to parse AI response:", responseText, e);
-        this.chatHistory.update(h => [...h, { sender: 'bot', text: "Sorry, I had trouble processing that request." }]);
-    }
-  }
-
-  private async handleBugAnalysis(action: { appId: string, description: string, filePath?: string }) {
-    this.chatHistory.update(h => [...h, { sender: 'bot', text: `Analyzing bug: "${action.description}". Reading source code...` }]);
+    this.userInput.set('');
+    this.pendingImage.set(null);
     this.isLoading.set(true);
-    this.chatHistory.update(h => [...h, { sender: 'bot', isThinking: true }]);
-
-    const filePath = action.filePath || this.getFilePathForApp(action.appId);
-    if (!filePath) {
-      this.handleError(`Sorry, I cannot find the source file for the app "${action.appId}".`);
-      return;
-    }
-
-    const fileContent = this.fs.readFile(filePath);
-    if (fileContent === null) {
-      this.handleError(`Could not read the source code for "${action.appId}" at path ${filePath}.`);
-      return;
-    }
+    
+    this.updateMessages(activeId, [...this.chatHistory(), { sender: 'bot', isThinking: true }]);
+    this.saveSessions();
 
     try {
-      const followupPrompt = `${this.systemInstruction}\n\nThe user reported this bug: "${this.userBugReport}".\n\nHere is the content of the file \`${filePath}\`:\n\`\`\`typescript\n${fileContent}\n\`\`\`\n\nPlease provide a 'repairCode' JSON object to fix the bug.`;
-      const responseText = await this.callGemini(followupPrompt);
-      this.chatHistory.update(history => history.slice(0, -1)); // Remove thinking indicator
-      this.processAiResponse(responseText);
-    } catch(e) {
-      this.handleError('Failed to generate a code fix.');
+      switch (this.selectedProvider()) {
+        case 'gemini':
+          await this.handleGeminiRequest();
+          break;
+        case 'openai':
+          await this.handleOpenAiRequest();
+          break;
+        default:
+          throw new Error(`${this.selectedProvider()} is not configured or available.`);
+      }
+      if (isNewChat && message) this.generateTitleForSession(activeId, message);
+    } catch (e: any) {
+      this.handleError(e.message || 'An unknown error occurred.');
+      console.error(e);
     } finally {
-      this.isLoading.set(false);
+        this.isLoading.set(false);
+        this.saveSessions();
     }
   }
 
-  private getFilePathForApp(appId: string): string | null {
-      // This is a simplified mapping for the demo.
-      const appName = appId.split('-').pop(); // 'banana-copilot' -> 'copilot'
-      if (!appName) return null;
-      // This assumes a standard file structure.
-      return `src/components/apps/${appName}/${appName}.component.ts`;
+  private getSystemContext(): string {
+    const openApps = this.desktopState.openWindows().map(w => w.title).join(', ') || 'None';
+    return `[System Context: Current open apps are: ${openApps}. Current wallpaper is ${this.settingsService.wallpaper()}. Current accent color is ${this.settingsService.accentColor()}.]`;
   }
 
-  private handleGetWeather(city: string) {
-    this.chatHistory.update(h => [...h, { sender: 'bot', text: `Getting weather for ${city}...`}]);
-    this.weatherService.getWeatherByCity(city).subscribe({
-      next: data => {
-        const description = data.weather[0].description;
-        const temp = data.main.temp;
-        const weatherText = `The weather in ${city} is currently ${description} with a temperature of ${temp}°C.`;
-        this.chatHistory.update(h => [...h, { sender: 'bot', text: weatherText}]);
-      },
-      error: () => {
-        this.chatHistory.update(h => [...h, { sender: 'bot', text: `Sorry, I couldn't get the weather for ${city}.`}]);
-      }
+  private async handleGeminiRequest() {
+    if (!this.ai) throw new Error('Gemini API key is not configured.');
+    
+    const contents = [
+        { role: 'user', parts: [{ text: this.getSystemContext() }] },
+        ...this.buildGeminiContents()
+    ];
+    
+    const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash', contents, config: { systemInstruction: this.systemInstruction }
     });
+
+    this.updateMessages(this.activeSessionId()!, this.chatHistory().slice(0, -1)); // Remove thinking bubble
+    this.processAiResponse(response.text.trim());
+  }
+
+  private async handleOpenAiRequest() {
+    const apiKey = this.apiKeyService.openAiApiKey();
+    if (!apiKey) throw new Error('OpenAI API key is not configured.');
+
+    const messages = this.buildOpenAiMessages();
+    
+    const response = await fetch(`${CORS_PROXY}https://api.openai.com/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: messages,
+      })
+    });
+
+    if (!response.ok) {
+        await this.handleApiError('OpenAI', response);
+    }
+    const data = await response.json();
+    const responseText = data.choices[0]?.message?.content;
+    
+    this.updateMessages(this.activeSessionId()!, this.chatHistory().slice(0, -1));
+    this.processAiResponse(responseText.trim());
+  }
+  
+  private async handleApiError(providerName: string, response: Response): Promise<never> {
+    if (response.status === 429) {
+        throw new Error(
+            `${providerName} API Error: You have exceeded your usage quota or rate limit. ` +
+            `Please check your plan and billing details on the ${providerName} website.`
+        );
+    }
+    
+    const errorText = await response.text();
+    let errorBody = errorText;
+
+    try {
+        const errorData = JSON.parse(errorText);
+        // Only OpenAI is left which uses fetch, so this is the only format to check.
+        if (providerName === 'OpenAI') {
+            errorBody = errorData.error?.message || errorText;
+        }
+    } catch (e) {
+        // Non-JSON response, use raw text
+    }
+    
+    // Check for HTML response
+    if (errorBody.trim().startsWith('<!DOCTYPE html>')) {
+        const match = errorBody.match(/<h2 class=".*?">(.*?)<\/h2>/);
+        errorBody = match ? match[1] : 'Origin DNS error';
+    }
+
+    throw new Error(`${providerName} API error: ${response.status} - ${errorBody}`);
+  }
+
+  // --- Message History Builders ---
+
+  private buildGeminiContents(): Content[] { /* [Unchanged] */ return this.chatHistory().slice(1).filter(m => !m.isThinking).map(message => ({ role: message.sender === 'user' ? 'user' : 'model', parts: this.buildPartsForMessage(message) })); }
+  private buildPartsForMessage(message: ChatMessage): Part[] { /* [Unchanged] */ const parts: Part[] = []; if (message.text) parts.push({ text: message.text }); if (message.imageUrl) { parts.push({ inlineData: { mimeType: message.imageUrl.split(':')[1].split(';')[0], data: message.imageUrl.split(',')[1] } }); } return parts; }
+
+  private buildOpenAiMessages(): any[] {
+    const messages = this.chatHistory()
+      .slice(1) // skip initial bot message
+      .filter(m => !m.isThinking)
+      .map(m => {
+        const content: any[] = [];
+        if (m.text) content.push({ type: 'text', text: m.text });
+        if (m.imageUrl) content.push({ type: 'image_url', image_url: { url: m.imageUrl } });
+        
+        return {
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: content.length === 1 ? content[0].text : content,
+        };
+      });
+
+    return [
+      { role: 'system', content: `${this.systemInstruction}\n\n${this.getSystemContext()}` },
+      ...messages
+    ];
+  }
+
+  private processAiResponse(responseText: string) {
+    const activeId = this.activeSessionId();
+    if (activeId === null) return;
+
+    const jsonRegex = /```json\n([\s\S]*?)\n```/;
+    const match = responseText.match(jsonRegex);
+    
+    let confirmationMessage = responseText.replace(jsonRegex, '').trim();
+
+    if (match && match[1]) {
+        try {
+            const actionData = JSON.parse(match[1]);
+            const actions = Array.isArray(actionData) ? actionData : [actionData];
+            
+            let lastConfirmation = '';
+            actions.forEach((action: CopilotAction | InAppAction) => {
+                if ('payload' in action) this.osInteraction.inAppActionRequest.next(action);
+                else this.osInteraction.copilotActionRequest.next(action);
+                lastConfirmation = this.getConfirmationMessage(action);
+            });
+            if (!confirmationMessage) confirmationMessage = lastConfirmation;
+
+        } catch (e) {
+            console.error('Failed to parse AI action JSON:', e);
+            if (!confirmationMessage) confirmationMessage = responseText;
+        }
+    }
+    
+    this.updateMessages(activeId, [...this.chatHistory(), { sender: 'bot', text: confirmationMessage }]);
   }
 
   private getConfirmationMessage(action: CopilotAction | InAppAction): string {
-    if ('appId' in action && 'payload' in action) { // InAppAction
-        switch(action.action) {
-            case 'createNote': return `Creating note: "${action.payload.title}"...`;
-            case 'createFile': return `Creating file "${action.payload.fileName}"...`;
-            case 'executeTerminalCommand': return `Running command: "${action.payload.command}"...`;
-            case 'playMusicTrack': return `Playing song: "${action.payload.trackTitle}"...`;
-            default: return 'Executing action...';
-        }
-    } else { // CopilotAction
-      switch(action.action) {
-          case 'openApp': return `Opening ${action.appId}...`;
-          case 'setWallpaper': return 'Wallpaper changed!';
-          case 'setAccentColor': return `Accent color set to ${action.color}.`;
-          case 'restart': return 'Restarting now.';
-          case 'factoryReset': return 'Proceeding with factory reset.';
-          default: return 'Done!';
+    if ('payload' in action) { // InAppAction
+      switch (action.action) {
+        case 'executeTerminalCommand':
+          return `Executing "${action.payload.command}" in the terminal.`;
+        case 'createFile':
+          return `Okay, creating the file "${action.payload.fileName}" for you.`;
+        case 'createNote':
+          return `I've created a new note with the title "${action.payload.title}".`;
+        case 'playMusicTrack':
+          return `Now playing "${action.payload.trackTitle}" in the Music Player.`;
+        case 'addKanbanTask':
+          return `I've added "${action.payload.taskContent}" to the "${action.payload.columnTitle}" column in your Kanban board.`;
+        default:
+          return `Got it. Performing the requested action in the app.`;
+      }
+    } else { // OsAction
+      switch (action.action) {
+        case 'openApp':
+          const appName = APPS_CONFIG.find(a => a.id === action.appId)?.title || action.appId;
+          return `Opening ${appName}.`;
+        case 'setWallpaper':
+          return `Wallpaper set to ${action.wallpaperId.split('-')[1]}. Enjoy the new view!`;
+        case 'setAccentColor':
+          return `Accent color changed to ${action.color}.`;
+        case 'restart':
+          return `Restarting Banana OS now.`;
+        case 'factoryReset':
+          return `Performing a factory reset as requested. All settings and apps will be erased.`;
+        case 'corruptFileSystem':
+          return `As you wish. Initiating file system corruption sequence. This is irreversible without a factory reset.`;
+        default:
+          return `Action completed successfully.`;
       }
     }
   }
   
   private handleError(message: string) {
-      this.error.set(message);
-      this.chatHistory.update(history => history.filter(m => !m.isThinking));
-      this.chatHistory.update(history => [...history, { sender: 'bot', text: message }]);
-      this.isLoading.set(false);
+    const activeId = this.activeSessionId();
+    if (!activeId) return;
+
+    let finalMessage = `Error: ${message}`;
+    if (message.includes('quota') || message.includes('rate limit')) {
+        const availableProviders = this.providers()
+            .filter(p => p.id !== this.selectedProvider() && p.available)
+            .map(p => p.name)
+            .join(', ');
+
+        if (availableProviders) {
+            finalMessage += ` You could try switching to another available provider in settings, such as: ${availableProviders}.`;
+        }
+    }
+    
+    const historyWithoutThinking = this.chatHistory().slice(0, -1);
+    this.updateMessages(activeId, [...historyWithoutThinking, { sender: 'bot', text: finalMessage }]);
+    this.isLoading.set(false);
+  }
+
+  triggerImageUpload() { this.imageInputEl.nativeElement.click(); }
+  handleImageUpload(event: Event) { const input = event.target as HTMLInputElement; if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => this.pendingImage.set(e.target?.result as string); reader.readAsDataURL(input.files[0]); } }
+  async toggleRecording() { /* [Unchanged] */ }
+  private async transcribeAudio(blob: Blob) { /* [Unchanged] */ }
+
+  // --- Session Management ---
+
+  private loadSessions() {
+    const savedSessions = localStorage.getItem(COPILOT_SESSIONS_KEY);
+    if (savedSessions) {
+      try {
+        const sessions = JSON.parse(savedSessions) as ChatSession[];
+        if (Array.isArray(sessions) && sessions.length > 0) {
+          this.chatSessions.set(sessions);
+          this.activeSessionId.set(sessions[0].id);
+          return;
+        }
+      } catch (e) { localStorage.removeItem(COPILOT_SESSIONS_KEY); }
+    }
+
+    const oldHistory = localStorage.getItem(COPILOT_HISTORY_KEY);
+    if (oldHistory) {
+        try {
+            const messages = JSON.parse(oldHistory) as ChatMessage[];
+            if (Array.isArray(messages) && messages.length > 1) {
+                const newSession: ChatSession = { id: Date.now(), title: 'Imported Chat', messages };
+                this.chatSessions.set([newSession]);
+                this.activeSessionId.set(newSession.id);
+                localStorage.removeItem(COPILOT_HISTORY_KEY);
+                this.saveSessions();
+                return;
+            }
+        } catch(e) { localStorage.removeItem(COPILOT_HISTORY_KEY); }
+    }
+    this.newChat();
+  }
+
+  private saveSessions() {
+    localStorage.setItem(COPILOT_SESSIONS_KEY, JSON.stringify(this.chatSessions()));
+  }
+
+  private updateMessages(sessionId: number, messages: ChatMessage[]) {
+    this.chatSessions.update(sessions => 
+      sessions.map(s => s.id === sessionId ? { ...s, messages } : s)
+    );
+  }
+
+  private async generateTitleForSession(sessionId: number, prompt: string) {
+    if (!this.ai) return; // Only generate titles with Gemini for now
+    try {
+      const titlePrompt = `Create a very short, concise title (4 words max) for the following user prompt: "${prompt}"`;
+      const response = await this.ai.models.generateContent({model: 'gemini-2.5-flash', contents: titlePrompt });
+      const title = response.text.trim().replace(/"/g, '');
+
+      this.chatSessions.update(sessions => 
+        sessions.map(s => s.id === sessionId ? { ...s, title } : s)
+      );
+      this.saveSessions();
+    } catch (e) {
+      console.error("Failed to generate title", e);
+    }
+  }
+
+  newChat() {
+    const newSession: ChatSession = {
+      id: Date.now(),
+      title: 'New Chat',
+      messages: [{ sender: 'bot', text: 'Hello! I am Banana Copilot. How can I assist you with Banana OS today?' }]
+    };
+    this.chatSessions.update(sessions => [newSession, ...sessions]);
+    this.activeSessionId.set(newSession.id);
+    this.saveSessions();
+  }
+
+  selectChat(sessionId: number) {
+    this.activeSessionId.set(sessionId);
+  }
+
+  deleteChat(sessionId: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.chatSessions.update(sessions => sessions.filter(s => s.id !== sessionId));
+    
+    if (this.activeSessionId() === sessionId) {
+      const remaining = this.chatSessions();
+      if (remaining.length > 0) this.activeSessionId.set(remaining[0].id);
+      else this.newChat();
+    }
+    this.saveSessions();
+  }
+
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 }

@@ -7,9 +7,9 @@ import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-camera',
+  standalone: true,
   templateUrl: './camera.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // Fix: Added imports to make this component standalone, as required by its usage in app.component.
   imports: [CommonModule],
 })
 export class CameraComponent implements AfterViewInit, OnDestroy {

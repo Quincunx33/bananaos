@@ -1,107 +1,141 @@
-
-<div class="h-full flex flex-col bg-gray-800 text-gray-200">
-  <!-- Main Content -->
-  <div class="flex-1 flex overflow-hidden">
-    
-    <!-- Left Pane: Files and Toolbar -->
-    <div class="flex-1 flex flex-col">
-      <!-- Toolbar -->
-      <div class="flex-shrink-0 p-2 bg-gray-900/30 flex items-center justify-between gap-2 border-b border-gray-700/50">
-        <div class="flex items-center gap-2">
-          <button (click)="goUp()" [disabled]="currentPath() === '/'" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-            <i class="fas fa-arrow-up"></i>
-          </button>
-          <div class="flex items-center text-sm bg-gray-900/50 px-2 py-1 rounded-md">
-            @for (crumb of breadcrumbs(); track crumb.path) {
-              <span (click)="navigateTo(crumb.path)" class="px-2 hover:bg-gray-700 rounded-md cursor-pointer">{{ crumb.name }}</span>
-              @if (!$last) {
-                <i class="fas fa-chevron-right text-xs text-gray-500 mx-1"></i>
-              }
-            }
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button (click)="createNewFolder()" class="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md transition-colors">
-              <i class="fas fa-folder-plus mr-2"></i>New Folder
-          </button>
-          <button (click)="createNewFile()" class="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md transition-colors">
-              <i class="fas fa-file-plus mr-2"></i>New File
-          </button>
-          <button (click)="triggerUpload()" class="px-3 py-1.5 text-sm accent-bg hover:opacity-90 rounded-md transition-colors">
-              <i class="fas fa-upload mr-2"></i>Upload
-          </button>
-        </div>
-      </div>
-      
-      <!-- File list -->
-      <div class="flex-1 p-4 overflow-y-auto" (click)="deselect()">
-        @if (contents().length > 0) {
-          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-            @for (node of contents(); track node.path) {
-              <div (click)="$event.stopPropagation(); selectNode(node)" 
-                   (dblclick)="handleDoubleClick(node)" 
-                   class="flex flex-col items-center p-2 rounded-lg cursor-pointer transition-colors select-none text-center"
-                   [class.bg-blue-500/30]="selectedNode()?.path === node.path"
-                   [class.hover:bg-gray-700/50]="selectedNode()?.path !== node.path">
-                <i class="text-4xl mb-2" [ngClass]="getIconForNode(node)"></i>
-                <span class="text-xs break-all">{{ node.name }}</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="h-full flex items-center justify-center text-gray-500">
-            <p>This folder is empty.</p>
-          </div>
+<div class="h-full flex flex-col bg-gray-800 text-gray-200 font-sans" (contextmenu)="$event.preventDefault()">
+  <!-- Toolbar -->
+  <div class="flex-shrink-0 p-2 bg-gray-900/30 flex items-center justify-between gap-2 border-b border-gray-700/50 flex-wrap">
+    <div class="flex items-center gap-1">
+      <button (click)="goUp()" [disabled]="currentPath() === '/'" title="Go Up" class="toolbar-btn"> <i class="fas fa-arrow-up"></i> </button>
+      <div class="flex items-center text-sm bg-gray-900/50 px-2 py-1.5 rounded-md h-9">
+        @for (crumb of breadcrumbs(); track crumb.path) {
+          <span (click)="navigateTo(crumb.path)" class="px-2 hover:bg-gray-700 rounded-md cursor-pointer">{{ crumb.name }}</span>
+          @if (!$last) { <i class="fas fa-chevron-right text-xs text-gray-500 mx-1"></i> }
         }
       </div>
     </div>
-
-    <!-- Right Pane: Preview -->
-    <div class="w-72 flex-shrink-0 border-l border-gray-700/50 bg-gray-900/30 flex flex-col">
-      @if (selectedNode(); as node) {
-        <div class="flex-1 p-4 overflow-y-auto">
-          <div class="flex flex-col items-center text-center">
-            <i class="text-5xl mb-4" [ngClass]="getIconForNode(node)"></i>
-            <h3 class="text-lg font-bold break-all w-full">{{ node.name }}</h3>
-            <p class="text-xs text-gray-400 mb-4">{{ node.type === 'directory' ? 'Folder' : 'File' }}</p>
-          </div>
-          
-          <div class="mt-4 pt-4 border-t border-gray-700 space-y-2">
-            @switch (node.type) {
-              @case ('directory') {
-                <p class="text-sm text-gray-400">Contains {{ selectedDirectoryChildrenCount() }} items.</p>
-              }
-              @case ('file') {
-                @if (isSelectedImage()) {
-                  <img [src]="node.content" alt="Preview" class="w-full rounded-lg object-contain">
-                } @else if (isSelectedText()) {
-                  <div class="bg-gray-900/50 p-2 rounded-md max-h-48 overflow-auto">
-                    <pre class="text-xs text-gray-300 whitespace-pre-wrap break-all">{{ node.content }}</pre>
-                  </div>
-                } @else {
-                  <p class="text-sm text-gray-400">No preview available for this file type.</p>
-                }
-              }
-            }
-          </div>
-        </div>
-        <div class="flex-shrink-0 p-3 border-t border-gray-700 flex gap-2">
-          <button (click)="renameSelectedNode()" class="flex-1 px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md transition-colors">
-            <i class="fas fa-pencil-alt mr-2"></i>Rename
-          </button>
-          <button (click)="deleteSelectedNode()" class="flex-1 px-3 py-1.5 text-sm bg-red-800/70 hover:bg-red-700 text-red-300 hover:text-red-200 rounded-md transition-colors">
-            <i class="fas fa-trash-alt mr-2"></i>Delete
-          </button>
-        </div>
-      } @else {
-        <div class="h-full flex items-center justify-center text-gray-500 text-center p-4">
-          <div>
-            <i class="fas fa-info-circle text-3xl mb-2"></i>
-            <p>Select a file to see details and a preview.</p>
-          </div>
-        </div>
-      }
+    <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 bg-gray-900/50 px-1 py-1 rounded-md h-9">
+        <button (click)="requestNewFile()" class="toolbar-btn text-xs px-2" title="New File"><i class="fas fa-file-plus mr-1"></i> New File</button>
+        <button (click)="requestNewFolder()" class="toolbar-btn text-xs px-2" title="New Folder"><i class="fas fa-folder-plus mr-1"></i> New Folder</button>
+        <button (click)="triggerUpload()" class="toolbar-btn text-xs px-2" title="Upload File"><i class="fas fa-upload mr-1"></i> Upload</button>
+      </div>
+      <div class="w-px h-6 bg-gray-700 mx-1"></div>
+      <div class="relative">
+        <i class="fas fa-search text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        <input type="text" [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)" placeholder="Search..." class="bg-gray-700 rounded-md py-1.5 pl-9 pr-3 h-9 w-32 focus:w-48 transition-all focus:outline-none focus:ring-2 accent-ring-focus">
+      </div>
+      <button (click)="cycleSortBy()" class="toolbar-btn capitalize w-20" title="Sort by"> <i class="fas fa-sort-amount-down mr-2"></i>{{ sortBy() }} </button>
+      <button (click)="toggleSortDirection()" class="toolbar-btn" title="Sort Direction"> <i class="fas" [class.fa-arrow-down]="sortDirection() === 'asc'" [class.fa-arrow-up]="sortDirection() === 'desc'"></i> </button>
+      <div class="w-px h-6 bg-gray-700 mx-1"></div>
+      <button (click)="viewMode.set('list')" class="toolbar-btn" [class.active]="viewMode() === 'list'" title="List View"> <i class="fas fa-list"></i> </button>
+      <button (click)="viewMode.set('grid')" class="toolbar-btn" [class.active]="viewMode() === 'grid'" title="Grid View"> <i class="fas fa-th-large"></i> </button>
     </div>
   </div>
+  
+  <!-- Main Content -->
+  <div class="flex-1 overflow-auto" (click)="deselect()" (contextmenu)="onBackgroundContextMenu($event)">
+    @if (displayContents().length > 0) {
+      @if (viewMode() === 'grid') {
+        <div class="p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+          @for (node of displayContents(); track node.path) {
+            <div (click)="$event.stopPropagation(); selectNode(node)" (dblclick)="handleDoubleClick(node)" (contextmenu)="onNodeContextMenu($event, node)" class="flex flex-col items-center p-2 rounded-lg cursor-pointer transition-colors select-none text-center" [class.bg-blue-500/30]="selectedNode()?.path === node.path" [class.hover:bg-gray-700/50]="selectedNode()?.path !== node.path">
+              <i class="text-4xl mb-2" [ngClass]="getIconForNode(node)"></i>
+              <span class="text-xs break-all">{{ node.name }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="text-sm">
+          <div class="sticky top-0 z-10 grid grid-cols-[40px_1fr_140px_100px_100px] gap-4 px-4 py-2 bg-gray-900/50 font-semibold border-b border-gray-700/50">
+            <span class="text-center"><i class="fas fa-hashtag"></i></span>
+            <span>Name</span>
+            <span>Date Modified</span>
+            <span>Type</span>
+            <span class="text-right">Size</span>
+          </div>
+          @for (node of displayContents(); track node.path) {
+            <div (click)="$event.stopPropagation(); selectNode(node)" (dblclick)="handleDoubleClick(node)" (contextmenu)="onNodeContextMenu($event, node)" class="grid grid-cols-[40px_1fr_140px_100px_100px] gap-4 items-center px-4 h-12 border-b border-gray-700/30 cursor-pointer" [class.bg-blue-500/30]="selectedNode()?.path === node.path" [class.hover:bg-gray-700/50]="selectedNode()?.path !== node.path">
+              <i class="text-lg text-center" [ngClass]="getIconForNode(node)"></i>
+              <span class="truncate text-left">{{ node.name }}</span>
+              <span class="text-gray-400 text-xs">{{ node.modifiedDate | date:'short' }}</span>
+              <span class="text-gray-400 truncate">{{ getFileType(node) }}</span>
+              <span class="text-right text-gray-400">{{ node.type === 'file' ? formatBytes(node.size) : '--' }}</span>
+            </div>
+          }
+        </div>
+      }
+    } @else {
+      <div class="h-full flex items-center justify-center text-gray-500">
+        <p>This folder is empty.</p>
+      </div>
+    }
+  </div>
+  
+  <!-- Status Bar -->
+  <footer class="flex-shrink-0 px-4 py-1 bg-gray-900/50 text-xs text-gray-400 border-t border-gray-700/50">
+    {{ statusBarText() }}
+  </footer>
+  
+  <!-- Context Menu -->
+  @if(contextMenu().visible) {
+    <div (click)="$event.stopPropagation()" class="fixed z-50 bg-gray-800 border border-gray-600 rounded-md shadow-lg text-sm w-48 py-1 animate-fade-in-fast" [style.left.px]="contextMenu().x" [style.top.px]="contextMenu().y">
+      @if(contextMenu().node; as node) {
+        <button (click)="contextMenuOpen()" class="context-menu-item font-bold"> <i class="fas fa-folder-open w-6"></i> Open </button>
+        <div class="h-px bg-gray-700 my-1"></div>
+        <button (click)="cutSelectedNode()" class="context-menu-item"> <i class="fas fa-cut w-6"></i> Cut </button>
+        <button (click)="copySelectedNode()" class="context-menu-item"> <i class="fas fa-copy w-6"></i> Copy </button>
+      }
+      <button (click)="paste()" [disabled]="!clipboard()" class="context-menu-item disabled:opacity-50"> <i class="fas fa-paste w-6"></i> Paste </button>
+      <div class="h-px bg-gray-700 my-1"></div>
+      @if(contextMenu().node; as node) {
+        <button (click)="requestRename()" class="context-menu-item"> <i class="fas fa-pencil-alt w-6"></i> Rename </button>
+        <button (click)="requestDelete()" class="context-menu-item text-red-400 hover:bg-red-500/20"> <i class="fas fa-trash-alt w-6"></i> Delete </button>
+      } @else {
+        <button (click)="requestNewFolder()" class="context-menu-item"> <i class="fas fa-folder-plus w-6"></i> New Folder </button>
+        <button (click)="requestNewFile()" class="context-menu-item"> <i class="fas fa-file-plus w-6"></i> New File </button>
+      }
+    </div>
+  }
+  
   <input type="file" #fileUploadInput class="hidden" (change)="handleFileUpload($event)">
+
+  <!-- Action Modal -->
+  @if(modalState(); as state) {
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" (click)="closeModal()">
+      <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-96 border border-gray-700 animate-fade-in" (click)="$event.stopPropagation()">
+        @switch(state.type) {
+          @case('newFile') { <h3 class="text-xl font-bold mb-4">Create New File</h3> }
+          @case('newFolder') { <h3 class="text-xl font-bold mb-4">Create New Folder</h3> }
+          @case('rename') { <h3 class="text-xl font-bold mb-4">Rename "{{ state.node?.name }}"</h3> }
+          @case('delete') {
+            <h3 class="text-xl font-bold mb-2 text-red-400">Confirm Deletion</h3>
+            <p class="text-gray-400 mb-6">Are you sure you want to delete "{{ state.node?.name }}"? This action cannot be undone.</p>
+          }
+        }
+        
+        @if(state.type !== 'delete') {
+          <input #modalInputField type="text"
+                 [value]="modalInput()"
+                 (input)="modalInput.set($any($event.target).value)"
+                 (keydown.enter)="confirmModalAction()"
+                 class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus mb-6">
+        }
+        
+        <div class="flex justify-end gap-4">
+          <button (click)="closeModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md">Cancel</button>
+          @if(state.type === 'delete') {
+            <button (click)="confirmModalAction()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-md">Delete</button>
+          } @else {
+            <button (click)="confirmModalAction()" class="px-4 py-2 accent-bg hover:opacity-90 rounded-md">Confirm</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>
+<style>
+  .toolbar-btn { @apply h-9 px-3 flex items-center justify-center rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors; }
+  .toolbar-btn.active { @apply bg-blue-600 text-white; }
+  .context-menu-item { @apply w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed; }
+  @keyframes fade-in-fast { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .animate-fade-in-fast { animation: fade-in-fast 0.1s ease-out; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .animate-fade-in { animation: fade-in 0.15s ease-out; }
+</style>

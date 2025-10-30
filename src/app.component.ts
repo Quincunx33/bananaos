@@ -1,18 +1,19 @@
-import { Component, ChangeDetectionStrategy, signal, effect, inject, Renderer2, PLATFORM_ID, OnDestroy, computed, Injector, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, effect, inject, Renderer2, PLATFORM_ID, OnDestroy, computed, Injector, OnInit, Type } from '@angular/core';
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { WindowComponent } from './components/window/window.component';
 import { AppWindow } from './models/window.model';
-import { APPS_CONFIG } from './config/apps.config';
 import { SettingsService } from './services/settings.service';
 import { AppManagementService } from './services/app-management.service';
-import { OsInteractionService, CodeRepairPayload } from './services/os-interaction.service';
+import { OsInteractionService } from './services/os-interaction.service';
 import { WINDOW_CONTEXT } from './injection-tokens';
 import { DesktopStateService } from './services/desktop-state.service';
 import { NotificationService } from './services/notification.service';
-import { FileSystemService } from './services/file-system.service';
-import { BackupService } from './services/backup.service';
+import { AppRegistryService } from './services/app-registry.service';
+import { FileSystemNode, FileSystemService } from './services/file-system.service';
+import { SystemPreferencesService } from './services/system-preferences.service';
+import { LockScreenService } from './services/lock-screen.service';
 
-// Import all app components
+// Import all app components for registration
 import { TerminalComponent } from './components/apps/terminal/terminal.component';
 import { SettingsComponent } from './components/apps/settings/settings.component';
 import { BrowserComponent } from './components/apps/browser/browser.component';
@@ -32,7 +33,6 @@ import { MapsComponent } from './components/apps/maps/maps.component';
 import { PdfReaderComponent } from './components/apps/pdf-reader/pdf-reader.component';
 import { TranslatorComponent } from './components/apps/translator/translator.component';
 import { CopilotComponent } from './components/apps/copilot/copilot.component';
-import { NotificationCenterComponent } from './components/notification-center/notification-center.component';
 import { MusicPlayerComponent } from './components/apps/music-player/music-player.component';
 import { MarkdownEditorComponent } from './components/apps/markdown-editor/markdown-editor.component';
 import { PodcastsComponent } from './components/apps/podcasts/podcasts.component';
@@ -48,11 +48,18 @@ import { StocksComponent } from './components/apps/stocks/stocks.component';
 import { NewsFeedComponent } from './components/apps/news-feed/news-feed.component';
 import { ForumsComponent } from './components/apps/forums/forums.component';
 import { BananaIdeComponent } from './components/apps/banana-ide/banana-ide.component';
+import { PaintComponent } from './components/apps/paint/paint.component';
+import { KanbanComponent } from './components/apps/kanban/kanban.component';
+import { FitnessTrackerComponent } from './components/apps/fitness-tracker/fitness-tracker.component';
+import { EbookReaderComponent } from './components/apps/ebook-reader/ebook-reader.component';
+import { AppBuilderComponent } from './components/apps/app-builder/app-builder.component';
+import { CustomAppRunnerComponent } from './components/apps/custom-app-runner/custom-app-runner.component';
+import { APPS_CONFIG } from './config/apps.config';
 
 // Types for persisting window state in localStorage
 type SerializableAppWindow = Omit<AppWindow, 'component' | 'injector'>;
 interface WindowsState {
-  windows: SerializableAppWindow[];
+  windows: (SerializableAppWindow & { contextData?: any })[];
   activeWindowId: string | null;
   nextZIndex: number;
 }
@@ -63,14 +70,7 @@ const WINDOWS_STATE_KEY = 'banana-os-windows-state';
   selector: 'app-root',
   standalone: true,
   imports: [
-    CommonModule, WindowComponent, TerminalComponent, SettingsComponent, BrowserComponent,
-    CalculatorComponent, WeatherComponent, CameraComponent, FileExplorerComponent, TextEditorComponent,
-    PhotoViewerComponent, StoreComponent, PlaceholderAppComponent, NotesComponent, 
-    SystemMonitorComponent, CalendarComponent, ClockComponent, MapsComponent, PdfReaderComponent, TranslatorComponent,
-    CopilotComponent, NotificationCenterComponent, MusicPlayerComponent, MarkdownEditorComponent, PodcastsComponent,
-    ChessComponent, SolitaireComponent, MinesweeperComponent, SudokuComponent, PuzzleBlocksComponent, Game2048Component,
-    WordFinderComponent, RecipeBookComponent, StocksComponent, NewsFeedComponent,
-    ForumsComponent, BananaIdeComponent
+    CommonModule, WindowComponent
   ],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -86,28 +86,37 @@ export class AppComponent implements OnInit, OnDestroy {
   osInteraction = inject(OsInteractionService);
   notificationService = inject(NotificationService);
   private desktopStateService = inject(DesktopStateService);
-  private fsService = inject(FileSystemService);
-  backupService = inject(BackupService);
+  private appRegistry = inject(AppRegistryService);
+  private fileSystemService = inject(FileSystemService);
+  systemPreferences = inject(SystemPreferencesService);
+  private lockScreenService = inject(LockScreenService);
   
   windows = signal<AppWindow[]>([]);
   activeWindowId = signal<string | null>(null);
   nextZIndex = signal(10);
   isStartMenuOpen = signal(false);
-  isRestarting = signal(false);
+  
+  restartingMessage = signal<string | null>(null);
+  isRestarting = computed(() => this.restartingMessage() !== null);
+
   isFactoryResetConfirmOpen = signal(false);
   isNotificationCenterOpen = signal(false);
 
-  // For Self-Healing
-  isCodeRepairConfirmOpen = signal(false);
-  codeRepairPayload = signal<CodeRepairPayload | null>(null);
-  isRestoreConfirmOpen = signal(false);
-  
   currentTime = signal(new Date());
   private clockInterval: any;
 
-  private allApps = APPS_CONFIG;
+  // Lock screen state
+  isLocked = this.lockScreenService.isLocked;
+  unlockAttemptPassword = signal('');
+  unlockError = signal(false);
+
+  timeFormatString = computed(() => {
+    return this.systemPreferences.timeFormat() === '12h' ? 'h:mm:ss a' : 'HH:mm:ss';
+  });
+
+  private allApps = this.appManagementService.allApps;
   installedApps = computed(() => 
-    this.allApps.filter(app => this.appManagementService.isAppInstalled(app.id))
+    this.allApps().filter(app => this.appManagementService.isAppInstalled(app.id))
   );
   
   unreadCount = this.notificationService.unreadCount;
@@ -122,8 +131,21 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.windows().filter(w => w.state !== 'minimized').slice().sort((a, b) => b.zIndex - a.zIndex);
   });
 
+  desktopFiles = signal<FileSystemNode[]>([]);
+  isSystemCorrupted = this.fileSystemService.isCorrupted;
+
   constructor() {
+    this.registerOriginalApps();
+
     if (isPlatformBrowser(this.platformId)) {
+        effect(() => {
+            // This effect runs once on startup and whenever a custom app is installed/uninstalled.
+            // It ensures that the app registry is aware of all user-created apps.
+            this.appManagementService.customApps().forEach(app => {
+                this.appRegistry.register(app.id, CustomAppRunnerComponent);
+            });
+        });
+
         this.loadState(); // Load state from localStorage
 
         this.clockInterval = setInterval(() => {
@@ -145,39 +167,12 @@ export class AppComponent implements OnInit, OnDestroy {
         });
 
         this.osInteraction.restartRequest.subscribe(() => {
-          this.isRestarting.set(true);
-          // Clear the window state from localStorage so it's fresh on "reload"
           localStorage.removeItem(WINDOWS_STATE_KEY); 
-          
-          setTimeout(() => {
-            // Reset all open windows and UI state
-            this.windows.set([]);
-            this.activeWindowId.set(null);
-            this.nextZIndex.set(10);
-            this.isStartMenuOpen.set(false);
-            this.isNotificationCenterOpen.set(false);
-            this.isCodeRepairConfirmOpen.set(false);
-            this.codeRepairPayload.set(null);
-            
-            // Hide the overlay
-            this.isRestarting.set(false);
-
-            // Notify the user that the restart is complete
-            this.notificationService.show({
-              appId: 'banana-copilot',
-              title: 'System Restart',
-              body: 'Banana OS has restarted successfully.',
-              type: 'info'
-            });
-          }, 3000);
+          this.runRestartSequence();
         });
 
         this.osInteraction.copilotActionRequest.subscribe(action => {
           this.handleCopilotAction(action);
-        });
-
-        this.osInteraction.codeRepairRequest.subscribe(payload => {
-          this.handleCodeRepairRequest(payload);
         });
 
         // This effect runs whenever window state changes and saves it.
@@ -186,7 +181,8 @@ export class AppComponent implements OnInit, OnDestroy {
             const state: WindowsState = {
                 windows: this.windows().map(w => {
                     const { component, injector, ...serializableWindow } = w;
-                    return serializableWindow;
+                    const contextData = injector?.get(WINDOW_CONTEXT, null);
+                    return { ...serializableWindow, contextData };
                 }),
                 activeWindowId: this.activeWindowId(),
                 nextZIndex: this.nextZIndex(),
@@ -196,6 +192,13 @@ export class AppComponent implements OnInit, OnDestroy {
         
         effect(() => {
             this.desktopStateService.openWindows.set(this.windows());
+        });
+
+        effect(() => {
+          const desktopDir = this.fileSystemService.getDirectory('/Desktop');
+          if (desktopDir) {
+            this.desktopFiles.set(Object.values(desktopDir.children));
+          }
         });
 
         effect(() => {
@@ -218,7 +221,79 @@ export class AppComponent implements OnInit, OnDestroy {
             const color = this.settingsService.accentColor();
             this.document.documentElement.style.setProperty('--accent-color', `var(--accent-color-${color})`);
         });
+
+        effect(() => {
+            const mode = this.systemPreferences.powerMode();
+            this.renderer.removeClass(this.document.body, 'power-mode-performance');
+            this.renderer.removeClass(this.document.body, 'power-mode-saving');
+            if (mode === 'performance') {
+                this.renderer.addClass(this.document.body, 'power-mode-performance');
+            } else if (mode === 'power-saving') {
+                this.renderer.addClass(this.document.body, 'power-mode-saving');
+            }
+        });
     }
+  }
+
+  private async runRestartSequence() {
+    this.restartingMessage.set('Applying changes...');
+    await new Promise(res => setTimeout(res, 700));
+    
+    this.restartingMessage.set('Finalizing...');
+    await new Promise(res => setTimeout(res, 800));
+
+    this.restartingMessage.set('Restarting now...');
+    await new Promise(res => setTimeout(res, 500));
+    
+    window.location.reload();
+  }
+
+  private registerOriginalApps() {
+    this.appRegistry.register('banana-copilot', CopilotComponent);
+    this.appRegistry.register('file-explorer', FileExplorerComponent);
+    this.appRegistry.register('terminal', TerminalComponent);
+    this.appRegistry.register('settings', SettingsComponent);
+    this.appRegistry.register('store', StoreComponent);
+    this.appRegistry.register('photo-viewer', PhotoViewerComponent);
+    this.appRegistry.register('camera', CameraComponent);
+    this.appRegistry.register('creative-music', MusicPlayerComponent);
+    this.appRegistry.register('creative-markdown', MarkdownEditorComponent);
+    this.appRegistry.register('creative-podcast', PodcastsComponent);
+    this.appRegistry.register('browser', BrowserComponent);
+    this.appRegistry.register('text-editor', TextEditorComponent);
+    this.appRegistry.register('prod-notes', NotesComponent);
+    this.appRegistry.register('prod-calendar', CalendarComponent);
+    this.appRegistry.register('prod-clock', ClockComponent);
+    this.appRegistry.register('prod-maps', MapsComponent);
+    this.appRegistry.register('calculator', CalculatorComponent);
+    this.appRegistry.register('weather', WeatherComponent);
+    this.appRegistry.register('util-system-monitor', SystemMonitorComponent);
+    this.appRegistry.register('util-pdf-reader', PdfReaderComponent);
+    this.appRegistry.register('app-translator', TranslatorComponent);
+    this.appRegistry.register('game-chess', ChessComponent);
+    this.appRegistry.register('game-solitaire', SolitaireComponent);
+    this.appRegistry.register('game-minesweeper', MinesweeperComponent);
+    this.appRegistry.register('game-sudoku', SudokuComponent);
+    this.appRegistry.register('game-puzzle-blocks', PuzzleBlocksComponent);
+    this.appRegistry.register('game-2048', Game2048Component);
+    this.appRegistry.register('game-word-finder', WordFinderComponent);
+    this.appRegistry.register('app-recipes', RecipeBookComponent);
+    this.appRegistry.register('app-stocks', StocksComponent);
+    this.appRegistry.register('app-news', NewsFeedComponent);
+    this.appRegistry.register('social-forums', ForumsComponent);
+    this.appRegistry.register('other-ide', BananaIdeComponent);
+    this.appRegistry.register('paint', PaintComponent);
+    this.appRegistry.register('kanban', KanbanComponent);
+    this.appRegistry.register('fitness-tracker', FitnessTrackerComponent);
+    this.appRegistry.register('ebook-reader', EbookReaderComponent);
+    this.appRegistry.register('app-builder', AppBuilderComponent);
+
+    // Register placeholder for all other apps
+    APPS_CONFIG.forEach(app => {
+        if (!this.appRegistry.get(app.id)) {
+            this.appRegistry.register(app.id, PlaceholderAppComponent);
+        }
+    });
   }
 
   ngOnInit() {
@@ -249,97 +324,21 @@ export class AppComponent implements OnInit, OnDestroy {
       case 'setAccentColor': this.settingsService.setAccentColor(action.color); break;
       case 'restart': this.osInteraction.restartRequest.next(); break;
       case 'factoryReset': this.requestFactoryReset(); break;
+      case 'corruptFileSystem': 
+        this.notificationService.show({ appId: 'banana-copilot', title: 'System Corruption', body: 'File system corruption initiated by Copilot.', type: 'error' });
+        this.fileSystemService.corruptFileSystem();
+        break;
     }
-  }
-
-  private handleCodeRepairRequest(payload: CodeRepairPayload) {
-    if (payload.filePath.includes('copilot.component.')) {
-      this.notificationService.show({
-        appId: 'banana-copilot',
-        title: 'Security Alert',
-        body: 'For system stability, Copilot cannot modify its own source code.',
-        type: 'error'
-      });
-      return;
-    }
-    this.codeRepairPayload.set(payload);
-    this.isCodeRepairConfirmOpen.set(true);
-  }
-
-  confirmCodeRepair() {
-    const payload = this.codeRepairPayload();
-    if (!payload) return;
-    
-    const originalContent = this.fsService.readFile(payload.filePath);
-    this.backupService.createBackup(payload.filePath, originalContent);
-
-    const success = this.fsService.writeFile(payload.filePath, payload.codePatch);
-    if (success) {
-      this.notificationService.show({
-        appId: 'banana-copilot',
-        title: 'Self-Healing',
-        body: 'Code patch applied successfully. Restarting system to apply changes.',
-        type: 'success'
-      });
-      this.osInteraction.restartRequest.next();
-    } else {
-      this.notificationService.show({
-        appId: 'banana-copilot',
-        title: 'Self-Healing Failed',
-        body: `Could not write changes to ${payload.filePath}.`,
-        type: 'error'
-      });
-    }
-    this.cancelCodeRepair();
-  }
-
-  cancelCodeRepair() {
-    this.isCodeRepairConfirmOpen.set(false);
-    this.codeRepairPayload.set(null);
-  }
-
-  requestEmergencyRestore() { this.isRestoreConfirmOpen.set(true); }
-  cancelEmergencyRestore() { this.isRestoreConfirmOpen.set(false); }
-
-  confirmEmergencyRestore() {
-      const backup = this.backupService.restoreLastBackup();
-      if (backup) {
-          const success = this.fsService.writeFile(backup.filePath, backup.content);
-          if (success) {
-              this.notificationService.show({
-                  appId: 'banana-copilot',
-                  title: 'System Restore',
-                  body: `Restored ${backup.filePath}. Restarting system.`,
-                  type: 'success'
-              });
-              this.backupService.clearBackup();
-              this.osInteraction.restartRequest.next();
-          } else {
-               this.notificationService.show({
-                  appId: 'banana-copilot',
-                  title: 'Restore Failed',
-                  body: `Could not write restored content to ${backup.filePath}.`,
-                  type: 'error'
-              });
-          }
-      } else {
-          this.notificationService.show({
-              appId: 'banana-copilot',
-              title: 'Restore Failed',
-              body: `No backup found to restore.`,
-              type: 'error'
-          });
-      }
-      this.isRestoreConfirmOpen.set(false);
   }
 
   private performFactoryReset() {
     this.windows.set([]);
     this.appManagementService.uninstallAllNonCoreApps();
     this.settingsService.resetToDefaults();
+    this.systemPreferences.resetAllToDefaults();
+    this.fileSystemService.resetToDefaults();
     this.activeWindowId.set(null);
     this.nextZIndex.set(10);
-    this.backupService.clearBackup();
   }
 
   requestFactoryReset() { this.isFactoryResetConfirmOpen.set(true); }
@@ -354,11 +353,24 @@ export class AppComponent implements OnInit, OnDestroy {
       if (savedStateJSON) {
           try {
               const savedState: WindowsState = JSON.parse(savedStateJSON);
-              const reconstructedWindows = savedState.windows
-                .map(sw => {
-                  const appConfig = this.allApps.find(app => app.id === sw.appId);
-                  if (!appConfig) return null;
-                  return { ...sw, component: appConfig.component };
+// Fix: Explicitly type the return value of the map function to AppWindow | null.
+// This ensures that the type predicate in the following filter function is valid,
+// resolving a type mismatch error where the inferred object type from the map
+// was not assignable to the AppWindow type expected by the predicate.
+              const reconstructedWindows: AppWindow[] = savedState.windows
+                .map((sw): AppWindow | null => {
+                  const appConfig = this.allApps().find(app => app.id === sw.appId);
+                  const component = this.appRegistry.get(sw.appId);
+                  if (!appConfig || !component) return null;
+                  
+                  let customInjector: Injector | undefined;
+                  if (sw.contextData) { 
+                       customInjector = Injector.create({ providers: [{ provide: WINDOW_CONTEXT, useValue: sw.contextData }], parent: this.injector });
+                  }
+                  
+                  const { contextData, ...serializableWindow } = sw;
+
+                  return { ...serializableWindow, component, injector: customInjector };
                 })
                 .filter((w): w is AppWindow => w !== null);
 
@@ -366,6 +378,7 @@ export class AppComponent implements OnInit, OnDestroy {
               this.activeWindowId.set(savedState.activeWindowId);
               this.nextZIndex.set(savedState.nextZIndex || 10);
           } catch (e) {
+              console.error("Failed to load window state:", e);
               localStorage.removeItem(WINDOWS_STATE_KEY);
           }
       }
@@ -373,7 +386,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
       if (this.clockInterval) clearInterval(this.clockInterval);
-      // Clean up subscriptions
       if (this.unlistenKeyDown) this.unlistenKeyDown();
       if (this.unlistenKeyUp) this.unlistenKeyUp();
   }
@@ -389,27 +401,57 @@ export class AppComponent implements OnInit, OnDestroy {
         if (minimized) { this.restoreWindow(minimized.id); return; }
     }
     
-    const appConfig = this.allApps.find(app => app.id === appId);
-    if (!appConfig) return;
+    const appConfig = this.allApps().find(app => app.id === appId);
+    const component = this.appRegistry.get(appId);
+    if (!appConfig || !component) {
+        console.error(`App or component not found for id: ${appId}`);
+        return;
+    }
 
     const newWindowId = `win-${Date.now()}`;
     const newZIndex = this.nextZIndex();
     const defaultSize = appConfig.defaultSize || { width: 600, height: 400 };
 
-    let customInjector: Injector | undefined;
-    if (data) {
-        data.windowId = newWindowId;
-        customInjector = Injector.create({ providers: [{ provide: WINDOW_CONTEXT, useValue: data }], parent: this.injector });
+    let finalSize = { ...defaultSize };
+    let finalPosition = { x: 50 + (this.windows().length % 10) * 20, y: 50 + (this.windows().length % 10) * 20 };
+
+    if (isPlatformBrowser(this.platformId)) {
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        if (screenWidth < 768) {
+            finalSize.width = Math.min(defaultSize.width, screenWidth * 0.95);
+            finalSize.height = Math.min(defaultSize.height, screenHeight * 0.8);
+            
+            finalPosition.x = (screenWidth - finalSize.width) / 2;
+            finalPosition.y = (screenHeight - finalSize.height - 52) / 4;
+        } else {
+            finalSize.width = Math.min(defaultSize.width, screenWidth - 40);
+            finalSize.height = Math.min(defaultSize.height, screenHeight - 52 - 40);
+
+            if (finalPosition.x + finalSize.width > screenWidth) {
+                finalPosition.x = screenWidth - finalSize.width - 20;
+            }
+            if (finalPosition.y + finalSize.height > screenHeight - 52) {
+                finalPosition.y = screenHeight - finalSize.height - 52 - 20;
+            }
+             if (finalPosition.x < 0) finalPosition.x = 20;
+             if (finalPosition.y < 0) finalPosition.y = 20;
+        }
     }
+
+    let customInjector: Injector | undefined;
+    const contextData = { ...data, windowId: newWindowId, appId: appId };
+    customInjector = Injector.create({ providers: [{ provide: WINDOW_CONTEXT, useValue: contextData }], parent: this.injector });
 
     const newWindow: AppWindow = {
       id: newWindowId,
       appId: appConfig.id,
       title: appConfig.title,
       icon: appConfig.icon,
-      component: appConfig.component,
-      position: { x: 50 + (this.windows().length % 10) * 20, y: 50 + (this.windows().length % 10) * 20 },
-      size: defaultSize,
+      component: component,
+      position: finalPosition,
+      size: finalSize,
       zIndex: newZIndex,
       isMinimized: false, isMaximized: false, state: 'default', injector: customInjector
     };
@@ -500,5 +542,58 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isAppSwitcherVisible.set(false);
       this.appSwitcherSelectionIndex.set(0);
     }
+  }
+
+  async attemptUnlock() {
+    this.unlockError.set(false);
+    const success = await this.lockScreenService.unlock(this.unlockAttemptPassword());
+    if (!success) {
+      this.unlockError.set(true);
+      // Reset after animation
+      setTimeout(() => this.unlockError.set(false), 820);
+    }
+    this.unlockAttemptPassword.set('');
+  }
+
+  getIconForNode(node: FileSystemNode): string {
+    if (node.type === 'directory') return 'fas fa-folder text-yellow-400';
+    const extension = node.name.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'txt': case 'md': return 'fas fa-file-alt text-gray-300';
+      case 'jpg': case 'jpeg': case 'png': case 'gif': return 'fas fa-file-image text-blue-400';
+      case 'js': case 'ts': case 'json': case 'html': case 'css': return 'fas fa-file-code text-green-400';
+      case 'pdf': return 'fas fa-file-pdf text-red-500';
+      case 'sys': case 'bin': return 'fas fa-cogs text-gray-500';
+      default: return 'fas fa-file text-gray-400';
+    }
+  }
+
+  openDesktopFile(node: FileSystemNode) {
+    if (node.type === 'directory') {
+      this.openApp('file-explorer', { path: node.path });
+      return;
+    }
+    
+    const extension = node.name.split('.').pop()?.toLowerCase();
+    let appId: string | null = null;
+    switch(extension) {
+      case 'txt': case 'md': case 'js': case 'ts': case 'json': case 'html': case 'css':
+        appId = 'text-editor';
+        break;
+      case 'jpg': case 'jpeg': case 'png': case 'gif':
+        appId = 'photo-viewer';
+        break;
+    }
+    
+    if (appId) {
+      this.openApp(appId, { filePath: node.path });
+    } else {
+      this.notificationService.show({ appId: 'file-explorer', title: 'Desktop', body: `File type ".${extension}" is not supported.`, type: 'warning' });
+    }
+  }
+
+  emergencyFix() {
+    this.fileSystemService.resetToDefaults();
+    this.notificationService.show({ appId: 'settings', title: 'System Restore', body: 'Emergency fix applied. File system has been restored to default.', type: 'success' });
   }
 }

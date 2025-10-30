@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-window',
+  standalone: true,
   templateUrl: './window.component.html',
   imports: [CommonModule],
   host: {

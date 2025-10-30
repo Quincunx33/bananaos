@@ -1,0 +1,11 @@
+<div class="h-full w-full bg-white">
+    @if(error(); as errorMsg) {
+        <div class="h-full w-full flex flex-col items-center justify-center p-4 text-center bg-gray-800 text-red-400">
+            <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold">App Runner Error</h3>
+            <p>{{ errorMsg }}</p>
+        </div>
+    } @else if(appSrc(); as src) {
+        <iframe [src]="src" class="w-full h-full border-0" title="Custom App Content"></iframe>
+    }
+</div>

@@ -12,12 +12,6 @@ export interface InAppAction {
     payload: { [key: string]: any };
 }
 
-export interface CodeRepairPayload {
-  filePath: string;
-  codePatch: string;
-  description: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class OsInteractionService {
   // Subject to request opening an app
@@ -37,7 +31,4 @@ export class OsInteractionService {
 
   // Subject for AI Copilot in-app commands
   inAppActionRequest = new Subject<InAppAction>();
-
-  // Subject for AI Copilot to request code repairs
-  codeRepairRequest = new Subject<CodeRepairPayload>();
 }

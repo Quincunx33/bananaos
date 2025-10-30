@@ -1,0 +1,109 @@
+<div class="h-full w-full flex bg-gray-900 text-gray-200 font-sans">
+  <!-- Left Panel: Settings & Install -->
+  <div class="w-72 flex-shrink-0 bg-gray-800 p-4 flex flex-col gap-6 border-r border-gray-700">
+    <h2 class="text-2xl font-bold">App Builder</h2>
+    
+    <div class="flex-grow space-y-6">
+      <div>
+        <label for="appName" class="block text-sm font-medium text-gray-400 mb-1">1. App Name</label>
+        <input type="text" id="appName" [ngModel]="appName()" (ngModelChange)="appName.set($event)" class="form-input" placeholder="My Awesome App">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-1">2. App Icon</label>
+        <div class="flex items-center gap-4">
+          @if (iconDataUrl(); as src) {
+            <img [src]="src" alt="Icon Preview" class="w-16 h-16 rounded-lg object-cover bg-gray-700">
+          } @else {
+            <div class="w-16 h-16 rounded-lg bg-gray-900/50 flex items-center justify-center border-2 border-dashed border-gray-600">
+              <i class="fas fa-image text-3xl text-gray-500"></i>
+            </div>
+          }
+          <div class="flex-1">
+            <input type="file" #iconInput class="hidden" accept="image/*" (change)="handleFileSelect($event, 'icon')">
+            <button (click)="iconInput.click()" class="form-btn w-full mb-1">
+              <i class="fas fa-upload mr-2"></i> Upload Icon
+            </button>
+            @if(iconFileName(); as name) {
+              <p class="text-xs text-gray-400 truncate" [title]="name">{{ name }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button (click)="installApp()" class="w-full accent-bg text-white font-semibold px-4 py-3 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center text-lg">
+      <i class="fas fa-hammer mr-2"></i> Build & Install App
+    </button>
+  </div>
+
+  <!-- Right Panel: File Uploads -->
+  <div class="flex-1 p-6 overflow-y-auto">
+    <h3 class="text-xl font-bold mb-4">3. Code Files</h3>
+    <div class="space-y-6">
+      <!-- HTML -->
+      <div class="file-upload-card">
+        <div class="file-upload-header">
+          <i class="fab fa-html5 text-2xl text-orange-500"></i>
+          <div>
+            <h4 class="font-bold">HTML File <span class="text-red-500">*</span></h4>
+            <p class="text-xs text-gray-400">The main entry point for your app.</p>
+          </div>
+        </div>
+        <div class="file-upload-body">
+            @if (htmlFileName(); as name) {
+                <div class="file-display">
+                    <span>{{ name }}</span>
+                    <button (click)="clearFile('html')" class="clear-btn">&times;</button>
+                </div>
+            } @else {
+                <input type="file" #htmlInput class="hidden" accept=".html" (change)="handleFileSelect($event, 'html')">
+                <button (click)="htmlInput.click()" class="form-btn"><i class="fas fa-file-upload mr-2"></i>Select .html file</button>
+            }
+        </div>
+      </div>
+      <!-- CSS -->
+      <div class="file-upload-card">
+        <div class="file-upload-header">
+          <i class="fab fa-css3-alt text-2xl text-blue-500"></i>
+          <div>
+            <h4 class="font-bold">CSS File <span class="font-normal text-gray-400">(Optional)</span></h4>
+            <p class="text-xs text-gray-400">Styles for your application.</p>
+          </div>
+        </div>
+         <div class="file-upload-body">
+            @if (cssFileName(); as name) {
+                <div class="file-display">
+                    <span>{{ name }}</span>
+                    <button (click)="clearFile('css')" class="clear-btn">&times;</button>
+                </div>
+            } @else {
+                <input type="file" #cssInput class="hidden" accept=".css" (change)="handleFileSelect($event, 'css')">
+                <button (click)="cssInput.click()" class="form-btn"><i class="fas fa-file-upload mr-2"></i>Select .css file</button>
+            }
+        </div>
+      </div>
+      <!-- JS -->
+      <div class="file-upload-card">
+        <div class="file-upload-header">
+          <i class="fab fa-js-square text-2xl text-yellow-400"></i>
+          <div>
+            <h4 class="font-bold">JavaScript File <span class="font-normal text-gray-400">(Optional)</span></h4>
+            <p class="text-xs text-gray-400">Logic and interactivity for your app.</p>
+          </div>
+        </div>
+        <div class="file-upload-body">
+            @if (jsFileName(); as name) {
+                <div class="file-display">
+                    <span>{{ name }}</span>
+                    <button (click)="clearFile('js')" class="clear-btn">&times;</button>
+                </div>
+            } @else {
+                <input type="file" #jsInput class="hidden" accept=".js" (change)="handleFileSelect($event, 'js')">
+                <button (click)="jsInput.click()" class="form-btn"><i class="fas fa-file-upload mr-2"></i>Select .js file</button>
+            }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

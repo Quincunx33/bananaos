@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .form-input {
+    @apply w-full bg-gray-900/50 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus;
+  }
+  .form-btn {
+    @apply w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold px-3 py-2 rounded-md transition-colors text-sm flex items-center justify-center;
+  }
+  .file-upload-card {
+    @apply bg-gray-800/60 rounded-lg border border-gray-700/50 overflow-hidden;
+  }
+  .file-upload-header {
+    @apply flex items-center gap-4 p-4;
+  }
+  .file-upload-body {
+    @apply bg-gray-900/50 p-4 border-t border-gray-700/50;
+  }
+  .file-display {
+    @apply flex items-center justify-between bg-gray-700/50 text-green-400 font-mono text-sm px-3 py-2 rounded-md;
+  }
+  .clear-btn {
+    @apply w-6 h-6 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/50 hover:text-red-300 transition-colors;
+  }
+}

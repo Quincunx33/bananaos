@@ -1,16 +1,17 @@
-<div class="h-full flex flex-col bg-gray-800">
-  <div class="flex-shrink-0 p-2 bg-gray-700 flex items-center gap-2">
-    <button (click)="goBack()" [disabled]="!canGoBack()" title="Back" class="w-8 h-8 flex items-center justify-center hover:bg-gray-600 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-arrow-left"></i></button>
-    <button (click)="goForward()" [disabled]="!canGoForward()" title="Forward" class="w-8 h-8 flex items-center justify-center hover:bg-gray-600 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-arrow-right"></i></button>
-    <button (click)="reload()" title="Reload" class="w-8 h-8 flex items-center justify-center hover:bg-gray-600 rounded-full"><i class="fas fa-redo"></i></button>
-    <div class="flex-1 relative">
-      <i class="fas fa-lock text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-      <input type="text" [value]="urlInput()" (change)="onEnter($event)" title="Address Bar" class="w-full bg-gray-900 rounded-full py-1.5 pl-9 pr-3 text-white focus:outline-none focus:ring-2 accent-ring-focus">
+<div class="h-full flex flex-col bg-gray-800 text-gray-200">
+  <!-- Toolbar -->
+  <div id="browser-controls" class="flex-shrink-0 p-2 bg-gray-800 flex items-center gap-2 border-b border-gray-700/50">
+    <button id="browser-back" title="Back" class="p-2 hover:bg-gray-600 rounded disabled:opacity-50"><i class="fas fa-arrow-left"></i></button>
+    <button id="browser-forward" title="Forward" class="p-2 hover:bg-gray-600 rounded disabled:opacity-50"><i class="fas fa-arrow-right"></i></button>
+    <button id="browser-reload" title="Reload" class="p-2 hover:bg-gray-600 rounded"><i class="fas fa-redo"></i></button>
+    <div class="flex-1 relative bg-gray-900 rounded-full focus-within:bg-gray-700 focus-within:ring-2 accent-border transition-all duration-200 flex items-center">
+      <span id="browser-security-icon" class="px-3 text-gray-400"><i class="fas fa-globe"></i></span>
+      <input type="text" id="url-input" title="Address Bar" placeholder="Search or type a web address" class="w-full bg-transparent py-1.5 pr-3 focus:outline-none">
     </div>
+    <button id="browser-go" title="Go" class="p-2 hover:bg-gray-600 rounded"><i class="fas fa-arrow-right"></i></button>
   </div>
-  <div class="flex-1 bg-white">
-    @if (!reloading()) {
-      <iframe [src]="currentUrl()" class="w-full h-full border-0" title="Web Content"></iframe>
-    }
+  <!-- Content Area where tabs will be inserted before -->
+  <div class="flex-1 bg-white relative browser-content-area">
+    <iframe id="browser-iframe" class="w-full h-full border-0" title="Web Content"></iframe>
   </div>
 </div>

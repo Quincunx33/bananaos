@@ -1,8 +1,9 @@
 
+
 import { Injectable, signal, effect } from '@angular/core';
 
-const WALLPAPER_KEY = 'banana-os-wallpaper';
-const ACCENT_COLOR_KEY = 'banana-os-accent-color';
+export const WALLPAPER_KEY = 'banana-os-wallpaper';
+export const ACCENT_COLOR_KEY = 'banana-os-accent-color';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
