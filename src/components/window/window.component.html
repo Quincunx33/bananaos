@@ -2,9 +2,13 @@
      [class.bg-gray-700/80]="isActive()"
      [class.bg-gray-900/50]="!isActive()"
      class="flex-shrink-0 h-10 px-3 py-2 flex justify-between items-center cursor-move backdrop-blur-md border-b border-gray-700/50 transition-colors">
-  <div class="flex items-center gap-2">
-    <i class="app-icon text-lg" [ngClass]="window().icon"></i>
-    <span class="app-title font-medium text-gray-200">{{ window().title }}</span>
+  <div class="flex items-center gap-2 overflow-hidden">
+    @if (window().icon.startsWith('data:image')) {
+      <img [src]="window().icon" [alt]="window().title" class="w-5 h-5 object-contain flex-shrink-0">
+    } @else {
+      <i class="app-icon text-lg" [ngClass]="window().icon"></i>
+    }
+    <span class="app-title font-medium text-gray-200 truncate">{{ window().title }}</span>
   </div>
   <div class="flex space-x-2">
     <button (click)="minimize.emit()" title="Minimize" class="w-7 h-7 flex items-center justify-center hover:bg-gray-600 rounded-full transition-colors">

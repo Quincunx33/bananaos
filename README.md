@@ -1,5 +1,5 @@
 # Banana OS 🍌
-https://nafis548.github.io/bananaos/
+
 > A fully functional, web-based desktop environment simulator built with modern Angular, featuring a complete windowing system, taskbar, core applications, and a powerful, integrated AI assistant.
 
 Welcome to Banana OS! This project is a demonstration of what's possible on the modern web, creating a familiar, fast, and feature-rich desktop experience that runs entirely in your browser.

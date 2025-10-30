@@ -1,1 +1,21 @@
-<!-- This file is intentionally left blank to disable notification toasts -->
+<div class="fixed top-4 right-4 z-[1001] w-full max-w-xs space-y-3">
+  @for (toast of visibleToasts(); track toast.id) {
+    <div class="notification-toast" [class]="'toast-' + toast.type" role="alert">
+      <div class="flex-shrink-0 pt-0.5">
+        @if (toast.appIcon.startsWith('data:image')) {
+          <img [src]="toast.appIcon" [alt]="toast.title" class="w-6 h-6 object-contain">
+        } @else {
+          <i class="text-xl" [class]="toast.appIcon"></i>
+        }
+      </div>
+      <div class="ml-3 flex-1">
+        <p class="text-sm font-semibold text-white">{{ toast.title }}</p>
+        <p class="text-sm text-gray-300">{{ toast.body }}</p>
+      </div>
+      <button (click)="removeToast(toast.id)" class="ml-auto -mx-1.5 -my-1.5 p-1.5 inline-flex h-8 w-8 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-gray-300">
+        <span class="sr-only">Dismiss</span>
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  }
+</div>

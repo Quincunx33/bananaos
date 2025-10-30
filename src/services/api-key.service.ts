@@ -1,53 +1,73 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, WritableSignal, inject } from '@angular/core';
+import { CryptoService } from './crypto.service';
 
-const API_KEY_STORAGE_KEY = 'banana-os-gemini-api-key';
+const ENCRYPTION_PREFIX = 'enc_v1::';
+
+const GEMINI_API_KEY_STORAGE_KEY = 'banana-os-gemini-api-key';
 const OPENWEATHER_API_KEY_STORAGE_KEY = 'banana-os-openweather-api-key';
+const OPENAI_API_KEY_STORAGE_KEY = 'banana-os-openai-api-key';
 
 @Injectable({ providedIn: 'root' })
 export class ApiKeyService {
-  apiKey = signal<string | null>(null);
+  private cryptoService = inject(CryptoService);
+
+  apiKey = signal<string | null>(null); // Gemini API Key
+  openAiApiKey = signal<string | null>(null);
   openWeatherApiKey = signal<string | null>(null);
 
   constructor() {
     if (typeof localStorage !== 'undefined') {
-      const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-      if (savedKey) {
-        this.apiKey.set(savedKey);
-      }
-      const savedWeatherKey = localStorage.getItem(OPENWEATHER_API_KEY_STORAGE_KEY);
-      if (savedWeatherKey) {
-        this.openWeatherApiKey.set(savedWeatherKey);
+      this.loadInitialKeys();
+    }
+  }
+
+  private async loadInitialKeys() {
+    await this.loadKey(GEMINI_API_KEY_STORAGE_KEY, this.apiKey);
+    await this.loadKey(OPENAI_API_KEY_STORAGE_KEY, this.openAiApiKey);
+    await this.loadKey(OPENWEATHER_API_KEY_STORAGE_KEY, this.openWeatherApiKey);
+  }
+
+  private async loadKey(storageKey: string, keySignal: WritableSignal<string | null>) {
+    const storedValue = localStorage.getItem(storageKey);
+    if (storedValue) {
+      if (storedValue.startsWith(ENCRYPTION_PREFIX)) {
+        const encryptedPart = storedValue.substring(ENCRYPTION_PREFIX.length);
+        try {
+          const decryptedValue = await this.cryptoService.decrypt(encryptedPart);
+          keySignal.set(decryptedValue);
+        } catch {
+          keySignal.set(null);
+          localStorage.removeItem(storageKey);
+        }
+      } else {
+        // Handle legacy plaintext keys by encrypting them
+        keySignal.set(storedValue);
+        await this.setKey(storedValue, keySignal, storageKey); // This will re-save it as encrypted
       }
     }
   }
 
-  setApiKey(key: string) {
+  private async setKey(key: string, keySignal: WritableSignal<string | null>, storageKey: string) {
     const trimmedKey = key.trim();
     if (trimmedKey) {
-      this.apiKey.set(trimmedKey);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(API_KEY_STORAGE_KEY, trimmedKey);
-      }
+      keySignal.set(trimmedKey);
+      const encryptedKey = await this.cryptoService.encrypt(trimmedKey);
+      localStorage.setItem(storageKey, `${ENCRYPTION_PREFIX}${encryptedKey}`);
     } else {
-      this.apiKey.set(null);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(API_KEY_STORAGE_KEY);
-      }
+      keySignal.set(null);
+      localStorage.removeItem(storageKey);
     }
   }
 
-  setOpenWeatherApiKey(key: string) {
-    const trimmedKey = key.trim();
-    if (trimmedKey) {
-      this.openWeatherApiKey.set(trimmedKey);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(OPENWEATHER_API_KEY_STORAGE_KEY, trimmedKey);
-      }
-    } else {
-      this.openWeatherApiKey.set(null);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(OPENWEATHER_API_KEY_STORAGE_KEY);
-      }
-    }
+  async setApiKey(key: string) {
+    await this.setKey(key, this.apiKey, GEMINI_API_KEY_STORAGE_KEY);
+  }
+  
+  async setOpenAiApiKey(key: string) {
+    await this.setKey(key, this.openAiApiKey, OPENAI_API_KEY_STORAGE_KEY);
+  }
+
+  async setOpenWeatherApiKey(key: string) {
+    await this.setKey(key, this.openWeatherApiKey, OPENWEATHER_API_KEY_STORAGE_KEY);
   }
 }

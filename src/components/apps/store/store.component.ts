@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { APPS_CONFIG } from '../../../config/apps.config';
-import { AppManagementService } from '../../../services/app-management.service';
+import { AppManagementService, CustomApp } from '../../../services/app-management.service';
 import { AppConfig } from '../../../models/app.model';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -13,13 +12,14 @@ import { NotificationService } from '../../../services/notification.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StoreComponent {
-  private allApps = APPS_CONFIG;
   appManagementService = inject(AppManagementService);
   private notificationService = inject(NotificationService);
 
+  private allApps = this.appManagementService.allApps;
+
   categorizedApps = computed(() => {
     const categories: { [key: string]: AppConfig[] } = {};
-    for (const app of this.allApps) {
+    for (const app of this.allApps()) {
       const category = app.category || 'Other';
       if (!categories[category]) {
         categories[category] = [];

@@ -1,16 +1,17 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Notification, NewNotification } from '../models/notification.model';
-import { APPS_CONFIG } from '../config/apps.config';
+import { AppManagementService } from './app-management.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   notifications = signal<Notification[]>([]);
   private nextId = 0;
+  private appManagementService = inject(AppManagementService);
 
   unreadCount = computed(() => this.notifications().filter(n => !n.isRead).length);
 
   show(newNotif: NewNotification) {
-    const appConfig = APPS_CONFIG.find(app => app.id === newNotif.appId);
+    const appConfig = this.appManagementService.allApps().find(app => app.id === newNotif.appId);
 
     const newNotification: Notification = {
       id: this.nextId++,

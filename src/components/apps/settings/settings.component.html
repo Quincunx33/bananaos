@@ -1,211 +1,485 @@
 <div class="h-full flex bg-gray-900/80 backdrop-blur-sm text-gray-200">
-  <div class="w-48 bg-gray-900/50 p-2 flex-shrink-0">
+  <div class="w-52 bg-gray-900/50 p-2 flex-shrink-0 overflow-y-auto">
     <h2 class="text-lg font-bold p-2 mb-2">Settings</h2>
-    <ul>
+    <ul class="space-y-1">
       <li>
-        <button (click)="activeTab.set('personalization')" 
-                [class.bg-gray-700]="activeTab() === 'personalization'"
-                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
-          <i class="fas fa-palette mr-2 w-4"></i>Personalization
+        <button (click)="activeTab.set('system')" [class.bg-gray-700]="activeTab() === 'system'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-desktop w-4 text-center"></i><span>System</span>
         </button>
       </li>
       <li>
-        <button (click)="activeTab.set('api-keys')" 
-                [class.bg-gray-700]="activeTab() === 'api-keys'"
-                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
-          <i class="fas fa-key mr-2 w-4"></i>API Keys
+        <button (click)="activeTab.set('personalization')" [class.bg-gray-700]="activeTab() === 'personalization'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-palette w-4 text-center"></i><span>Personalization</span>
         </button>
       </li>
       <li>
-        <button (click)="activeTab.set('system')" 
-                [class.bg-gray-700]="activeTab() === 'system'"
-                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
-          <i class="fas fa-desktop mr-2 w-4"></i>System
+        <button (click)="activeTab.set('notifications')" [class.bg-gray-700]="activeTab() === 'notifications'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-bell w-4 text-center"></i><span>Notifications</span>
+        </button>
+      </li>
+       <li>
+        <button (click)="activeTab.set('sound')" [class.bg-gray-700]="activeTab() === 'sound'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-volume-up w-4 text-center"></i><span>Sound</span>
+        </button>
+      </li>
+       <li>
+        <button (click)="activeTab.set('language')" [class.bg-gray-700]="activeTab() === 'language'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-language w-4 text-center"></i><span>Language & Region</span>
+        </button>
+      </li>
+       <li>
+        <button (click)="activeTab.set('input')" [class.bg-gray-700]="activeTab() === 'input'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-mouse-pointer w-4 text-center"></i><span>Input Devices</span>
         </button>
       </li>
       <li>
-        <button (click)="activeTab.set('data')" 
-                [class.bg-gray-700]="activeTab() === 'data'"
-                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors">
-          <i class="fas fa-database mr-2 w-4"></i>Data Management
+        <button (click)="activeTab.set('power')" [class.bg-gray-700]="activeTab() === 'power'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-bolt w-4 text-center"></i><span>Power</span>
+        </button>
+      </li>
+      <li>
+        <button (click)="activeTab.set('security')" [class.bg-gray-700]="activeTab() === 'security'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-shield-alt w-4 text-center"></i><span>Security</span>
+        </button>
+      </li>
+      <li>
+        <button (click)="activeTab.set('api-keys')" [class.bg-gray-700]="activeTab() === 'api-keys'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-key w-4 text-center"></i><span>API Keys</span>
+        </button>
+      </li>
+      <li>
+        <button (click)="activeTab.set('data')" [class.bg-gray-700]="activeTab() === 'data'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-database w-4 text-center"></i><span>Data Management</span>
+        </button>
+      </li>
+       <li>
+        <button (click)="activeTab.set('about')" [class.bg-gray-700]="activeTab() === 'about'"
+                class="w-full text-left p-2 rounded hover:bg-gray-700 transition-colors flex items-center gap-3">
+          <i class="fas fa-info-circle w-4 text-center"></i><span>About</span>
         </button>
       </li>
     </ul>
   </div>
 
-  <div class="flex-1 p-6 overflow-y-auto">
+  <div class="flex-1 p-6 overflow-y-auto relative">
     @switch (activeTab()) {
+      @case ('system') {
+        <h3 class="text-2xl font-bold mb-6">System</h3>
+        <div class="space-y-6">
+          <div class="p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">Device Information</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"> <span class="text-gray-400">OS Version:</span> <span>Banana OS 1.0</span> </div>
+              <div class="flex justify-between"> <span class="text-gray-400">Device Model:</span> <span class="font-mono">{{ deviceModel() }}</span> </div>
+              <div class="flex justify-between"> <span class="text-gray-400">Public IP Address:</span> <span class="font-mono">{{ ipAddress() }}</span> </div>
+              <div class="flex justify-between"> <span class="text-gray-400">MAC Address:</span> <span class="font-mono">{{ macAddress() }}</span> </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-gray-800/50 rounded-lg">
+              <h4 class="text-lg font-semibold mb-3">Reset Options</h4>
+              <p class="text-sm text-gray-400 mb-2">Reset personalization settings (wallpaper, theme, sound, etc.) to their default values. Your apps and files will not be affected.</p>
+              <button (click)="requestResetAccount()" class="bg-yellow-600 hover:bg-yellow-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity">
+                Reset Personalization Settings
+              </button>
+          </div>
+
+          <div class="p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3 text-red-300">System Action</h4>
+            <div>
+              <p class="text-sm text-gray-400 mb-2">Perform a factory reset. This will close all windows, uninstall non-core apps, and reset all settings. <span class="font-bold">This action is irreversible.</span></p>
+               <button (click)="requestFactoryReset()" class="bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity">
+                Factory Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      }
       @case ('personalization') {
+        <!-- Personalization Content -->
         <h3 class="text-2xl font-bold mb-6">Personalization</h3>
-        
         <div class="mb-8">
           <h4 class="text-lg font-semibold mb-3">Accent Color</h4>
           <div class="flex flex-wrap gap-3">
             @for (color of accentColors; track color) {
-              <button (click)="settingsService.setAccentColor(color)"
-                      [class.ring-2]="settingsService.accentColor() === color"
-                      [style.background-color]="'var(--accent-color-' + color + ')'"
-                      class="w-10 h-10 rounded-full ring-offset-2 ring-offset-gray-800 transition-all">
-              </button>
+              <button (click)="settingsService.setAccentColor(color)" [class.ring-2]="settingsService.accentColor() === color" [style.background-color]="'var(--accent-color-' + color + ')'" class="w-10 h-10 rounded-full ring-offset-2 ring-offset-gray-800 transition-all"></button>
             }
           </div>
         </div>
-
         <div class="mb-8">
           <h4 class="text-lg font-semibold mb-3">Wallpaper</h4>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             @for (wallpaper of wallpapers; track wallpaper.id) {
-              <div (click)="settingsService.setWallpaper(wallpaper.id)"
-                   [class.ring-2]="settingsService.wallpaper() === wallpaper.id"
-                   class="aspect-video rounded-md cursor-pointer ring-offset-2 ring-offset-gray-800 accent-ring-focus overflow-hidden"
-                   [ngClass]="wallpaper.id">
-                   <div class="h-full w-full flex items-end p-2 bg-black/20">
-                     <span class="text-white font-semibold text-sm">{{ wallpaper.name }}</span>
-                   </div>
+              <div (click)="settingsService.setWallpaper(wallpaper.id)" [class.ring-2]="settingsService.wallpaper() === wallpaper.id" class="aspect-video rounded-md cursor-pointer ring-offset-2 ring-offset-gray-800 accent-ring-focus overflow-hidden" [class]="wallpaper.id">
+                <div class="h-full w-full flex items-end p-2 bg-black/20"> <span class="text-white font-semibold text-sm">{{ wallpaper.name }}</span> </div>
               </div>
             }
           </div>
         </div>
-        
         <div class="pt-6 border-t border-gray-700">
           <h4 class="text-lg font-semibold mb-3">Custom Wallpaper</h4>
           <div class="bg-gray-800/50 p-4 rounded-lg flex items-start gap-4">
             @if (customWallpaperPreview()) {
               <img [src]="customWallpaperPreview()" alt="Wallpaper Preview" class="w-32 h-20 object-cover rounded">
             } @else {
-              <div class="w-32 h-20 bg-gray-700 rounded flex items-center justify-center">
-                <i class="fas fa-image text-3xl text-gray-500"></i>
-              </div>
+              <div class="w-32 h-20 bg-gray-700 rounded flex items-center justify-center"> <i class="fas fa-image text-3xl text-gray-500"></i> </div>
             }
             <div class="flex-1">
               <p class="text-sm text-gray-400 mb-2">Upload an image to use as your desktop background.</p>
               <input type="file" #fileInput class="hidden" accept="image/*" (change)="onWallpaperFileSelected($event)">
               <div class="flex gap-2">
-                  <button (click)="fileInput.click()" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity text-sm">
-                    <i class="fas fa-upload mr-2"></i>Choose Image
-                  </button>
-                  @if (customWallpaperPreview()) {
-                    <button (click)="setCustomWallpaper()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity text-sm">
-                      Apply
-                    </button>
-                  }
+                <button (click)="fileInput.click()" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity text-sm"> <i class="fas fa-upload mr-2"></i>Choose Image </button>
+                @if (customWallpaperPreview()) {
+                  <button (click)="setCustomWallpaper()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity text-sm"> Apply </button>
+                }
               </div>
             </div>
           </div>
         </div>
       }
-      @case ('api-keys') {
-        <h3 class="text-2xl font-bold mb-6">API Keys</h3>
-        <div class="p-4 bg-gray-800/50 rounded-lg mb-6">
-          <h4 class="text-lg font-semibold mb-3">Google Gemini API</h4>
-          <p class="text-sm text-gray-400 mb-4">Provide your Google Gemini API key to enable AI features like Banana Copilot. You can get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 hover:underline">Google AI Studio</a>.</p>
-          
-          <div class="flex gap-2 mb-2">
-            <div class="relative flex-grow">
-              <input [type]="isGeminiKeyVisible() ? 'text' : 'password'"
-                     placeholder="Enter your Gemini API key..."
-                     [value]="geminiApiKey()"
-                     (input)="geminiApiKey.set($any($event.target).value)"
-                     class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
-              <button (click)="isGeminiKeyVisible.set(!isGeminiKeyVisible())" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white">
-                <i class="fas" [class.fa-eye]="!isGeminiKeyVisible()" [class.fa-eye-slash]="isGeminiKeyVisible()"></i>
-              </button>
-            </div>
-            <button (click)="saveGeminiApiKey()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity">
-                <i class="fas fa-save mr-2"></i>Save
-            </button>
-          </div>
-          <div class="text-xs text-gray-500">
-            <span>Status: </span>
-            @if (apiKeyService.apiKey()) {
-              <span class="text-green-400">Key is set ({{ maskedGeminiApiKey() }})</span>
-            } @else {
-              <span class="text-yellow-400">Not configured</span>
-            }
-          </div>
-        </div>
+      @case ('notifications') {
+        <h3 class="text-2xl font-bold mb-6">Notifications</h3>
         <div class="p-4 bg-gray-800/50 rounded-lg">
-          <h4 class="text-lg font-semibold mb-3">OpenWeatherMap API</h4>
-          <p class="text-sm text-gray-400 mb-4">Provide your OpenWeatherMap API key to enable the Weather app. You can get a free key from <a href="https://home.openweathermap.org/api_keys" target="_blank" class="text-blue-400 hover:underline">OpenWeatherMap</a>.</p>
-          
-          <div class="flex gap-2 mb-2">
-            <div class="relative flex-grow">
-              <input [type]="isOpenWeatherKeyVisible() ? 'text' : 'password'"
-                     placeholder="Enter your OpenWeatherMap API key..."
-                     [value]="openWeatherApiKey()"
-                     (input)="openWeatherApiKey.set($any($event.target).value)"
-                     class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
-              <button (click)="isOpenWeatherKeyVisible.set(!isOpenWeatherKeyVisible())" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white">
-                <i class="fas" [class.fa-eye]="!isOpenWeatherKeyVisible()" [class.fa-eye-slash]="isOpenWeatherKeyVisible()"></i>
-              </button>
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-lg font-semibold">Do Not Disturb</h4>
+              <p class="text-sm text-gray-400">Temporarily disable all notifications.</p>
             </div>
-            <button (click)="saveOpenWeatherApiKey()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity">
-                <i class="fas fa-save mr-2"></i>Save
-            </button>
-          </div>
-          <div class="text-xs text-gray-500">
-            <span>Status: </span>
-            @if (apiKeyService.openWeatherApiKey()) {
-              <span class="text-green-400">Key is set ({{ maskedOpenWeatherApiKey() }})</span>
-            } @else {
-              <span class="text-yellow-400">Not configured</span>
-            }
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" [checked]="systemPreferences.dndEnabled()" (change)="systemPreferences.dndEnabled.set($any($event.target).checked)" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-focus:ring-2 accent-ring-focus peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:accent-bg"></div>
+            </label>
           </div>
         </div>
       }
-      @case ('system') {
-        <h3 class="text-2xl font-bold mb-6">System Information</h3>
-        <div class="bg-gray-800/50 p-4 rounded-lg">
-          <p><strong>OS:</strong> Banana OS</p>
-          <p><strong>Version:</strong> 1.0 (Angular)</p>
-          <p><strong>Environment:</strong> Web Applet</p>
+      @case ('sound') {
+        <h3 class="text-2xl font-bold mb-6">Sound</h3>
+        <div class="space-y-6">
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Master Volume</h4>
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-volume-down text-gray-400"></i>
+                    <input type="range" min="0" max="100" [value]="systemPreferences.masterVolume()" (input)="systemPreferences.masterVolume.set(+$any($event.target).value)" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-bg">
+                    <i class="fas fa-volume-up text-gray-400"></i>
+                    <span class="font-mono w-8 text-right">{{ systemPreferences.masterVolume() }}</span>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold">System Sounds</h4>
+                        <p class="text-sm text-gray-400">Enable sounds for notifications, alerts, etc.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" [checked]="systemPreferences.systemSoundsEnabled()" (change)="systemPreferences.systemSoundsEnabled.set($any($event.target).checked)" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-focus:ring-2 accent-ring-focus peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:accent-bg"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+      }
+      @case ('language') {
+        <h3 class="text-2xl font-bold mb-6">Language & Region</h3>
+         <div class="space-y-6">
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Display Language</h4>
+                <p class="text-sm text-gray-400 mb-2">Choose the language for Banana OS.</p>
+                <select [ngModel]="systemPreferences.language()" (ngModelChange)="systemPreferences.language.set($event)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus">
+                    @for (lang of languages; track lang.id) {
+                        <option [value]="lang.id">{{ lang.name }}</option>
+                    }
+                </select>
+                <p class="text-xs text-yellow-400 mt-2">Note: Language change is a simulated feature.</p>
+            </div>
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Time Format</h4>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="time-format" value="12h" [checked]="systemPreferences.timeFormat() === '12h'" (change)="systemPreferences.timeFormat.set('12h')" class="accent-bg">
+                        <span>12-hour clock</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="time-format" value="24h" [checked]="systemPreferences.timeFormat() === '24h'" (change)="systemPreferences.timeFormat.set('24h')" class="accent-bg">
+                        <span>24-hour clock</span>
+                    </label>
+                </div>
+            </div>
+         </div>
+      }
+       @case ('input') {
+        <h3 class="text-2xl font-bold mb-6">Input Devices</h3>
+        <div class="space-y-6">
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Mouse Speed</h4>
+                <div class="flex items-center gap-4">
+                    <span class="text-gray-400">Slow</span>
+                    <input type="range" min="1" max="100" [value]="systemPreferences.mouseSpeed()" (input)="systemPreferences.mouseSpeed.set(+$any($event.target).value)" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-bg">
+                    <span class="text-gray-400">Fast</span>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Scrolling Speed</h4>
+                <div class="flex items-center gap-4">
+                    <span class="text-gray-400">Slow</span>
+                    <input type="range" min="1" max="100" [value]="systemPreferences.scrollSpeed()" (input)="systemPreferences.scrollSpeed.set(+$any($event.target).value)" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-bg">
+                    <span class="text-gray-400">Fast</span>
+                </div>
+            </div>
+             <div class="p-4 bg-gray-800/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Primary Mouse Button</h4>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="mouse-button" value="left" [checked]="systemPreferences.primaryMouseButton() === 'left'" (change)="systemPreferences.primaryMouseButton.set('left')" class="accent-bg">
+                        <span>Left</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="mouse-button" value="right" [checked]="systemPreferences.primaryMouseButton() === 'right'" (change)="systemPreferences.primaryMouseButton.set('right')" class="accent-bg">
+                        <span>Right</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+       }
+       @case ('power') {
+        <h3 class="text-2xl font-bold mb-6">Power</h3>
+        <div class="p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">Power Mode</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button (click)="systemPreferences.powerMode.set('power-saving')" 
+                        class="p-4 rounded-lg text-center border-2 hover:border-gray-500 transition-all flex flex-col items-center"
+                        [class.bg-blue-900/50]="systemPreferences.powerMode() === 'power-saving'"
+                        [class.border-blue-500]="systemPreferences.powerMode() === 'power-saving'"
+                        [class.bg-gray-700/50]="systemPreferences.powerMode() !== 'power-saving'"
+                        [class.border-transparent]="systemPreferences.powerMode() !== 'power-saving'">
+                    <i class="fas fa-leaf text-2xl mb-2"></i> 
+                    <span class="font-semibold">Power Saving</span>
+                    <p class="text-xs text-gray-400 mt-1">Reduces performance to save energy.</p>
+                </button>
+                 <button (click)="systemPreferences.powerMode.set('balanced')" 
+                         class="p-4 rounded-lg text-center border-2 hover:border-gray-500 transition-all flex flex-col items-center"
+                         [class.bg-blue-900/50]="systemPreferences.powerMode() === 'balanced'"
+                         [class.border-blue-500]="systemPreferences.powerMode() === 'balanced'"
+                         [class.bg-gray-700/50]="systemPreferences.powerMode() !== 'balanced'"
+                         [class.border-transparent]="systemPreferences.powerMode() !== 'balanced'">
+                    <i class="fas fa-balance-scale text-2xl mb-2"></i> 
+                    <span class="font-semibold">Balanced</span>
+                    <p class="text-xs text-gray-400 mt-1">Automatically balances performance and energy.</p>
+                </button>
+                 <button (click)="systemPreferences.powerMode.set('performance')" 
+                         class="p-4 rounded-lg text-center border-2 hover:border-gray-500 transition-all flex flex-col items-center"
+                         [class.bg-blue-900/50]="systemPreferences.powerMode() === 'performance'"
+                         [class.border-blue-500]="systemPreferences.powerMode() === 'performance'"
+                         [class.bg-gray-700/50]="systemPreferences.powerMode() !== 'performance'"
+                         [class.border-transparent]="systemPreferences.powerMode() !== 'performance'">
+                    <i class="fas fa-rocket text-2xl mb-2"></i> 
+                    <span class="font-semibold">Performance</span>
+                    <p class="text-xs text-gray-400 mt-1">Favors performance. May use more energy.</p>
+                </button>
+            </div>
+        </div>
+       }
+      @case ('security') {
+        <h3 class="text-2xl font-bold mb-6">Security</h3>
+         <div class="space-y-6">
+            <!-- Password Management Section -->
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+              <h4 class="text-lg font-semibold mb-3">Password</h4>
+              @if (isPasswordSet()) {
+                <!-- Change/Remove Password -->
+                <p class="text-sm text-gray-400 mb-4">Your OS is protected by a password.</p>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Change Password</label>
+                    <div class="relative mb-2">
+                      <input [type]="isCurrentPasswordVisible() ? 'text' : 'password'" placeholder="Current Password" [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                      <button (click)="toggleCurrentPasswordVisibility()" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isCurrentPasswordVisible()" [class.fa-eye-slash]="isCurrentPasswordVisible()"></i></button>
+                    </div>
+                    <div class="relative mb-2">
+                      <input [type]="isNewPasswordVisible() ? 'text' : 'password'" placeholder="New Password" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                      <button (click)="toggleNewPasswordVisibility()" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isNewPasswordVisible()" [class.fa-eye-slash]="isNewPasswordVisible()"></i></button>
+                    </div>
+                    <div class="relative mb-2">
+                      <input [type]="isConfirmPasswordVisible() ? 'text' : 'password'" placeholder="Confirm New Password" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                      <button (click)="toggleConfirmPasswordVisibility()" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isConfirmPasswordVisible()" [class.fa-eye-slash]="isConfirmPasswordVisible()"></i></button>
+                    </div>
+                    <button (click)="changePassword()" class="w-full accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity">Change Password</button>
+                  </div>
+                  <div class="pt-4 border-t border-gray-700">
+                    <p class="text-sm text-gray-400 mb-2">Or, you can remove password protection entirely.</p>
+                    <button (click)="removePassword()" class="w-full bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity">Remove Password</button>
+                  </div>
+                </div>
+              } @else {
+                <!-- Set Password -->
+                <p class="text-sm text-gray-400 mb-4">Set a password to protect your OS and enable screen lock.</p>
+                <div class="space-y-4">
+                  <div class="relative">
+                    <input [type]="isNewPasswordVisible() ? 'text' : 'password'" placeholder="New Password" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                    <button (click)="toggleNewPasswordVisibility()" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isNewPasswordVisible()" [class.fa-eye-slash]="isNewPasswordVisible()"></i></button>
+                  </div>
+                  <div class="relative">
+                    <input [type]="isConfirmPasswordVisible() ? 'text' : 'password'" placeholder="Confirm Password" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                    <button (click)="toggleConfirmPasswordVisibility()" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isConfirmPasswordVisible()" [class.fa-eye-slash]="isConfirmPasswordVisible()"></i></button>
+                  </div>
+                  <button (click)="setPassword()" class="w-full accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity">Set Password</button>
+                </div>
+              }
+            </div>
+
+            <div class="p-4 bg-gray-800/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Screen Lock</h4>
+                <p class="text-sm text-gray-400 mb-2">Automatically lock the screen after a period of inactivity.</p>
+                 <select [disabled]="!isPasswordSet()" [ngModel]="systemPreferences.screenLockTimeout()" (ngModelChange)="systemPreferences.screenLockTimeout.set(+$event)" class="w-full md:w-1/2 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus disabled:opacity-50 disabled:cursor-not-allowed">
+                    @for (timeout of lockTimeouts; track timeout.value) {
+                        <option [value]="timeout.value">{{ timeout.label }}</option>
+                    }
+                </select>
+                @if (!isPasswordSet()) {
+                  <p class="text-xs text-yellow-400 mt-2">A password must be set to enable screen lock.</p>
+                }
+                <button (click)="lockNow()" [disabled]="!isPasswordSet()" class="mt-4 bg-gray-600 hover:bg-gray-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                  Lock Now
+                </button>
+            </div>
+             <div class="p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3 text-red-300">Clear Data</h4>
+                <p class="text-sm text-gray-400 mb-2">Permanently delete all application data, settings, and API keys from your browser. <span class="font-bold">This is equivalent to a factory reset and will restart the OS.</span></p>
+                <button (click)="requestClearData()" class="bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-md transition-opacity">
+                    Clear All Application Data
+                </button>
+            </div>
+        </div>
+      }
+      @case ('api-keys') {
+        <h3 class="text-2xl font-bold mb-6">API Keys</h3>
+        <div class="space-y-6">
+          <div class="p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">Google Gemini API</h4>
+            <p class="text-sm text-gray-400 mb-4">Provide your Google Gemini API key to enable AI features. Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 hover:underline">Google AI Studio</a>.</p>
+            <div class="flex gap-2 mb-2">
+              <div class="relative flex-grow">
+                <input [type]="isGeminiKeyVisible() ? 'text' : 'password'" placeholder="Enter your Gemini API key..." [value]="geminiApiKey()" (input)="geminiApiKey.set($any($event.target).value)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                <button (click)="isGeminiKeyVisible.set(!isGeminiKeyVisible())" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isGeminiKeyVisible()" [class.fa-eye-slash]="isGeminiKeyVisible()"></i></button>
+              </div>
+              <button (click)="saveGeminiApiKey()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity"><i class="fas fa-save mr-2"></i>Save</button>
+            </div>
+            <div class="text-xs text-gray-500"><span>Status: </span>@if (apiKeyService.apiKey()) { <span class="text-green-400">Key is set ({{ maskedGeminiApiKey() }})</span> } @else { <span class="text-yellow-400">Not configured</span> }</div>
+          </div>
+          <div class="p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">OpenAI API</h4>
+            <p class="text-sm text-gray-400 mb-4">Provide your OpenAI API key to use models like GPT-4. Get a key from the <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-400 hover:underline">OpenAI Platform</a>.</p>
+            <div class="flex gap-2 mb-2">
+              <div class="relative flex-grow">
+                <input [type]="isOpenAiKeyVisible() ? 'text' : 'password'" placeholder="Enter your OpenAI API key..." [value]="openAiApiKey()" (input)="openAiApiKey.set($any($event.target).value)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                <button (click)="isOpenAiKeyVisible.set(!isOpenAiKeyVisible())" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isOpenAiKeyVisible()" [class.fa-eye-slash]="isOpenAiKeyVisible()"></i></button>
+              </div>
+              <button (click)="saveOpenAiApiKey()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity"><i class="fas fa-save mr-2"></i>Save</button>
+            </div>
+            <div class="text-xs text-gray-500"><span>Status: </span>@if (apiKeyService.openAiApiKey()) { <span class="text-green-400">Key is set ({{ maskedOpenAiApiKey() }})</span> } @else { <span class="text-yellow-400">Not configured</span> }</div>
+          </div>
+          <div class="p-4 bg-gray-800/50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3">OpenWeatherMap API</h4>
+            <p class="text-sm text-gray-400 mb-4">Provide your OpenWeatherMap API key to enable the Weather app. Get a free key from <a href="https://home.openweathermap.org/api_keys" target="_blank" class="text-blue-400 hover:underline">OpenWeatherMap</a>.</p>
+            <div class="flex gap-2 mb-2">
+              <div class="relative flex-grow">
+                <input [type]="isOpenWeatherKeyVisible() ? 'text' : 'password'" placeholder="Enter your OpenWeatherMap API key..." [value]="openWeatherApiKey()" (input)="openWeatherApiKey.set($any($event.target).value)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus pr-10">
+                <button (click)="isOpenWeatherKeyVisible.set(!isOpenWeatherKeyVisible())" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-white"><i class="fas" [class.fa-eye]="!isOpenWeatherKeyVisible()" [class.fa-eye-slash]="isOpenWeatherKeyVisible()"></i></button>
+              </div>
+              <button (click)="saveOpenWeatherApiKey()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity"><i class="fas fa-save mr-2"></i>Save</button>
+            </div>
+            <div class="text-xs text-gray-500"><span>Status: </span>@if (apiKeyService.openWeatherApiKey()) { <span class="text-green-400">Key is set ({{ maskedOpenWeatherApiKey() }})</span> } @else { <span class="text-yellow-400">Not configured</span> }</div>
+          </div>
         </div>
       }
       @case ('data') {
         <h3 class="text-2xl font-bold mb-6">Data Management</h3>
-        
         <div class="mb-8 p-4 bg-gray-800/50 rounded-lg">
-            <h4 class="text-lg font-semibold mb-3">Export Encrypted Settings</h4>
-            <p class="text-sm text-gray-400 mb-4">Save your personalization settings to a file. Set a password to encrypt it.</p>
-            <div class="flex gap-4">
-                <input type="password" 
-                       placeholder="Enter password..."
-                       [value]="exportPassword()"
-                       (input)="exportPassword.set($any($event.target).value)"
-                       class="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus">
-                <button (click)="exportSettings()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity">
-                    <i class="fas fa-download mr-2"></i>Export
-                </button>
-            </div>
+          <h4 class="text-lg font-semibold mb-3">Export Encrypted Settings</h4>
+          <p class="text-sm text-gray-400 mb-4">Save your personalization settings to a file. Set a password to encrypt it.</p>
+          <div class="flex gap-4">
+            <input type="password" placeholder="Enter password..." [value]="exportPassword()" (input)="exportPassword.set($any($event.target).value)" class="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus">
+            <button (click)="exportSettings()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity"> <i class="fas fa-download mr-2"></i>Export </button>
+          </div>
+            @if(lastExportTime(); as lastExport) {
+                <p class="text-xs text-gray-500 mt-2">Last exported: {{ lastExport | date:'medium' }}</p>
+            }
         </div>
-
         <div class="p-4 bg-gray-800/50 rounded-lg">
-            <h4 class="text-lg font-semibold mb-3">Import Encrypted Settings</h4>
-            <p class="text-sm text-gray-400 mb-4">Load your personalization settings from a file. You will need the password used for encryption.</p>
-            <div class="space-y-4">
-                <div>
-                    <label for="import-file-input" class="block text-sm font-medium text-gray-300 mb-1">Settings File</label>
-                    <input id="import-file-input"
-                           type="file" 
-                           (change)="handleFileSelect($event)"
-                           accept=".json"
-                           class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:accent-bg file:text-white hover:file:opacity-90">
-                </div>
-                 <div>
-                    <label for="import-password" class="block text-sm font-medium text-gray-300 mb-1">Decryption Password</label>
-                    <input id="import-password"
-                           type="password"
-                           placeholder="Enter password..."
-                           [value]="importPassword()"
-                           (input)="importPassword.set($any($event.target).value)"
-                           class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus">
-                </div>
-                <button (click)="importSettings()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity w-full">
-                    <i class="fas fa-upload mr-2"></i>Import & Apply
-                </button>
+          <h4 class="text-lg font-semibold mb-3">Import Encrypted Settings</h4>
+          <p class="text-sm text-gray-400 mb-4">Load your personalization settings from a file. You will need the password used for encryption.</p>
+          <div class="space-y-4">
+            <div>
+              <label for="import-file-input" class="block text-sm font-medium text-gray-300 mb-1">Settings File</label>
+              <input id="import-file-input" type="file" (change)="handleFileSelect($event)" accept=".json" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:accent-bg file:text-white hover:file:opacity-90">
             </div>
+            <div>
+              <label for="import-password" class="block text-sm font-medium text-gray-300 mb-1">Decryption Password</label>
+              <input id="import-password" type="password" placeholder="Enter password..." [value]="importPassword()" (input)="importPassword.set($any($event.target).value)" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 accent-ring-focus">
+            </div>
+            <button (click)="importSettings()" class="accent-bg text-white font-semibold px-4 py-2 rounded-md hover:opacity-90 transition-opacity w-full"> <i class="fas fa-upload mr-2"></i>Import & Apply </button>
+          </div>
         </div>
       }
+      @case ('about') {
+        <div class="flex flex-col items-center justify-center h-full text-center">
+          <i class="fas fa-lemon text-7xl accent-text mb-4"></i>
+          <h3 class="text-3xl font-bold mb-2">Banana OS</h3>
+          <p class="text-gray-400">Version 1.0 (Build {{ year }})</p>
+          <p class="mt-4 max-w-md">A fully functional web-based desktop environment simulator built with Angular.</p>
+          <div class="mt-8 text-xs text-gray-500">
+            <p>&copy; {{ year }} Banana OS Project. All rights reserved.</p>
+            <p class="mt-2">Created with passion by a world-class AI engineer.</p>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- Confirmation Modals -->
+    @if(isFactoryResetConfirmOpen()) {
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-96 border border-gray-700">
+          <h3 class="text-xl font-bold mb-2">Confirm Factory Reset</h3>
+          <p class="text-gray-400 mb-6">Are you sure you want to proceed? All custom settings and installed apps will be permanently deleted.</p>
+          <div class="flex justify-end gap-4">
+            <button (click)="cancelFactoryReset()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md">Cancel</button>
+            <button (click)="confirmFactoryReset()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-md">Confirm Reset</button>
+          </div>
+        </div>
+      </div>
+    }
+    @if(isResetAccountConfirmOpen()) {
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-96 border border-gray-700">
+          <h3 class="text-xl font-bold mb-2">Confirm Reset</h3>
+          <p class="text-gray-400 mb-6">Are you sure? This will reset all personalization settings (like wallpaper, sounds, etc.) to their defaults.</p>
+          <div class="flex justify-end gap-4">
+            <button (click)="cancelResetAccount()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md">Cancel</button>
+            <button (click)="confirmResetAccount()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-md">Confirm Reset</button>
+          </div>
+        </div>
+      </div>
+    }
+    @if(isClearDataConfirmOpen()) {
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-96 border border-gray-700">
+          <h3 class="text-xl font-bold mb-2 text-red-400">Confirm Clear All Data</h3>
+          <p class="text-gray-400 mb-6">This is a highly destructive action and will remove ALL data for Banana OS from this browser, including API keys, installed apps, and settings. The OS will restart.</p>
+          <div class="flex justify-end gap-4">
+            <button (click)="cancelClearData()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md">Cancel</button>
+            <button (click)="confirmClearData()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-md">Yes, Clear Everything</button>
+          </div>
+        </div>
+      </div>
     }
   </div>
 </div>

@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { WeatherService } from '../../../services/weather.service';
 import { signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-weather',
+  standalone: true,
   templateUrl: './weather.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule]
+  imports: [CommonModule, DecimalPipe]
 })
 export class WeatherComponent implements OnInit {
   private weatherService = inject(WeatherService);

@@ -1,24 +1,27 @@
-
-
 <div class="h-full bg-black text-white font-mono text-sm p-2 flex flex-col" (click)="focusInput()">
   <div #output class="flex-grow overflow-y-auto">
     @for (line of lines(); track $index) {
       <div>
         @if (line.type === 'command') {
-          <span class="text-yellow-400">user@banana:~$</span>
-          <span class="ml-2">{{ line.text }}</span>
+          <span class="text-yellow-400">{{ prompt() }}</span>
+          <span class="ml-2">{{ line.html }}</span>
         } @else {
           @if (line.isThinking) {
-            <span class="text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>{{ line.text }}</span>
+            <span class="text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Thinking...</span>
           } @else {
-            <span class="text-green-400 whitespace-pre-wrap">{{ line.text }}</span>
+            <span class="text-green-400" [innerHTML]="line.html"></span>
           }
         }
       </div>
     }
   </div>
   <div class="flex-shrink-0 flex items-center">
-    <span class="text-yellow-400">user@banana:~$</span>
-    <input #input type="text" (change)="processCommand($event)" class="bg-transparent border-none text-green-400 flex-1 ml-2 focus:outline-none" autofocus>
+    <span class="text-yellow-400">{{ prompt() }}</span>
+    <input #input 
+           type="text" 
+           (keydown)="handleKeydown($event)"
+           (keydown.enter)="processCommand($event)" 
+           class="bg-transparent border-none text-green-400 flex-1 ml-2 focus:outline-none" 
+           autofocus>
   </div>
 </div>

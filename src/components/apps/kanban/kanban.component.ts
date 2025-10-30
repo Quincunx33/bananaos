@@ -1,6 +1,8 @@
 
-import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { OsInteractionService } from '../../../services/os-interaction.service';
 
 interface Task {
   id: number;
@@ -27,6 +29,8 @@ export class KanbanComponent {
   board = signal<Column[]>([]);
   
   private draggedTask: { colId: number; taskId: number } | null = null;
+  private osInteraction = inject(OsInteractionService);
+  private destroyRef = inject(DestroyRef);
 
   constructor() {
     this.loadBoard();
@@ -36,6 +40,15 @@ export class KanbanComponent {
     effect(() => {
       this.saveBoard();
     });
+
+    this.osInteraction.inAppActionRequest
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(action => {
+        if (action.appId === 'kanban' && action.action === 'addKanbanTask') {
+          const { columnTitle, taskContent } = action.payload;
+          this.addTaskToColumn(columnTitle, taskContent);
+        }
+      });
   }
 
   private loadBoard() {
@@ -70,16 +83,32 @@ export class KanbanComponent {
   addTask(colId: number) {
     const newContent = prompt('Enter new task content:');
     if (newContent) {
-      this.board.update(currentBoard => 
-        currentBoard.map(column => {
-          if (column.id === colId) {
-            const newTask = { id: Date.now(), content: newContent };
-            return { ...column, tasks: [...column.tasks, newTask] };
-          }
-          return column;
-        })
-      );
+      this.addTaskToColumnById(colId, newContent);
     }
+  }
+
+  private addTaskToColumn(columnTitle: string, taskContent: string) {
+    this.board.update(currentBoard => 
+      currentBoard.map(column => {
+        if (column.title.toLowerCase() === columnTitle.toLowerCase()) {
+          const newTask = { id: Date.now(), content: taskContent };
+          return { ...column, tasks: [...column.tasks, newTask] };
+        }
+        return column;
+      })
+    );
+  }
+  
+  private addTaskToColumnById(colId: number, taskContent: string) {
+    this.board.update(currentBoard => 
+      currentBoard.map(column => {
+        if (column.id === colId) {
+          const newTask = { id: Date.now(), content: taskContent };
+          return { ...column, tasks: [...column.tasks, newTask] };
+        }
+        return column;
+      })
+    );
   }
 
   // Drag and Drop Handlers
