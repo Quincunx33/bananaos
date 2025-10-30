@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="120" fill="#2D2D2D"/>
+
+  <!-- Large Banana -->
+  <g transform="translate(25, -40)">
+    <path d="M141,294 C206,193 331,174 381,221 C366,246 301,291 211,299 C181,301 141,294 141,294Z" fill="#FFC107"/>
+    <path d="M381,221 C391,201 411,201 406,216 C401,231 381,231 381,221Z" fill="#795548"/>
+    <path d="M141,294 C136,291 131,301 139,304Z" fill="#4E342E"/>
+  </g>
+
+  <!-- Text -->
+  <text x="150" y="430" font-family="Helvetica, Arial, sans-serif" font-size="64" font-weight="bold" fill="white">Banana OS</text>
+  
+  <!-- Small Banana -->
+  <g transform="translate(80, 380) scale(0.3)">
+    <path d="M141,294 C206,193 331,174 381,221 C366,246 301,291 211,299 C181,301 141,294 141,294Z" fill="#FFC107"/>
+    <path d="M381,221 C391,201 411,201 406,216 C401,231 381,231 381,221Z" fill="#795548"/>
+    <path d="M141,294 C136,291 131,301 139,304Z" fill="#4E342E"/>
+  </g>
+</svg>
