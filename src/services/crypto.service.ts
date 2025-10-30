@@ -69,7 +69,10 @@ export class CryptoService {
   async decrypt(encryptedData: string): Promise<string> {
     await this.keyReady;
     const key = this.cryptoKey();
-    if (!key || !encryptedData.includes(':')) return encryptedData;
+    if (!key || !encryptedData.includes(':')) {
+      // If key is missing or data not in expected format, decryption is impossible.
+      throw new Error("Decryption pre-conditions not met: Key missing or invalid data format.");
+    }
 
     try {
       const [ivString, ciphertextString] = encryptedData.split(':');
@@ -86,7 +89,8 @@ export class CryptoService {
       return new TextDecoder().decode(decrypted);
     } catch (e) {
       console.error('Decryption failed:', e);
-      return encryptedData; // Fail gracefully, maybe it wasn't encrypted
+      // Re-throw the specific crypto error for the caller to handle.
+      throw e;
     }
   }
 }

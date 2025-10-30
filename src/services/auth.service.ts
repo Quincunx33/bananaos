@@ -26,8 +26,13 @@ export class AuthService {
     const storedHash = this.passwordHash();
     if (!storedHash) return false;
 
-    const decryptedPassword = await this.cryptoService.decrypt(storedHash);
-    return password === decryptedPassword;
+    try {
+      const decryptedPassword = await this.cryptoService.decrypt(storedHash);
+      return password === decryptedPassword;
+    } catch (e) {
+      console.error("Password verification failed during decryption:", e);
+      return false; // Treat decryption failure as a failed verification
+    }
   }
 
   removePassword(): void {
