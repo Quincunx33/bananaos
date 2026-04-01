@@ -17,7 +17,7 @@ export class ForumsComponent {
   activeTab = signal<'social' | 'email'>('social');
 
   email = signal({
-    to: 'nafisfuhad26@gmail.com',
+    to: 'nafisfuhad26@users.noreply.github.com',
     fromName: '',
     fromEmail: '',
     subject: 'Inquiry from Banana OS',
